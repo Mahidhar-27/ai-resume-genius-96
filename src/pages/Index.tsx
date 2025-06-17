@@ -12,7 +12,7 @@ import ResumePreview from '@/components/resume/ResumePreview';
 import AuthForm from '@/components/auth/AuthForm';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import { useResume } from '@/hooks/useResume';
-import { Download, Sparkles, Save, LogOut, User } from 'lucide-react';
+import { Download, Sparkles, Save, LogOut, User, FileText, CheckCircle2 } from 'lucide-react';
 
 export interface ResumeData {
   personalDetails: {
@@ -101,47 +101,65 @@ const ResumeBuilder = () => {
     return Math.round((completed / total) * 100);
   };
 
+  const getTabIcon = (tab: string) => {
+    switch (tab) {
+      case 'personal': return <User className="w-4 h-4" />;
+      case 'education': return <FileText className="w-4 h-4" />;
+      case 'experience': return <CheckCircle2 className="w-4 h-4" />;
+      case 'projects': return <Sparkles className="w-4 h-4" />;
+      case 'skills': return <FileText className="w-4 h-4" />;
+      default: return null;
+    }
+  };
+
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading your resume...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      {/* Header */}
-      <div className="bg-white border-b shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+      {/* Professional Header */}
+      <div className="bg-white border-b shadow-sm backdrop-blur-sm bg-white/95">
+        <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Smart Resume Builder</h1>
-              <p className="text-gray-600">Create your professional resume with AI-powered suggestions</p>
+            <div className="flex items-center space-x-4">
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
+                <FileText className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">Smart Resume Builder</h1>
+                <p className="text-sm text-gray-600">Create professional resumes with AI-powered assistance</p>
+              </div>
             </div>
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <User className="w-4 h-4" />
+              <span className="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
                 {user?.email}
-              </div>
-              <Button variant="outline" onClick={handleAISuggestions} className="gap-2">
+              </span>
+              <Button variant="outline" onClick={handleAISuggestions} className="gap-2 border-blue-200 hover:bg-blue-50">
                 <Sparkles className="w-4 h-4" />
-                AI Suggestions
+                AI Enhance
               </Button>
               <Button 
                 variant="outline" 
                 onClick={handleSave} 
                 disabled={isSaving}
-                className="gap-2"
+                className="gap-2 border-green-200 hover:bg-green-50"
               >
                 <Save className="w-4 h-4" />
-                {isSaving ? 'Saving...' : 'Save Draft'}
+                {isSaving ? 'Saving...' : 'Save'}
               </Button>
-              <Button onClick={handleExport} className="gap-2 bg-blue-600 hover:bg-blue-700">
+              <Button onClick={handleExport} className="gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700">
                 <Download className="w-4 h-4" />
                 Export PDF
               </Button>
-              <Button variant="outline" onClick={signOut} className="gap-2">
+              <Button variant="outline" onClick={signOut} className="gap-2 border-red-200 hover:bg-red-50 text-red-600">
                 <LogOut className="w-4 h-4" />
                 Sign Out
               </Button>
@@ -151,24 +169,44 @@ const ResumeBuilder = () => {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Left Panel - Form */}
           <div className="space-y-6">
-            <Card className="p-6">
+            <Card className="p-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-5 mb-6">
-                  <TabsTrigger value="personal" className="text-xs">Personal</TabsTrigger>
-                  <TabsTrigger value="education" className="text-xs">Education</TabsTrigger>
-                  <TabsTrigger value="experience" className="text-xs">Experience</TabsTrigger>
-                  <TabsTrigger value="projects" className="text-xs">Projects</TabsTrigger>
-                  <TabsTrigger value="skills" className="text-xs">Skills</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-5 mb-6 bg-gray-100 p-1 rounded-lg">
+                  <TabsTrigger value="personal" className="flex items-center gap-2 text-xs font-medium data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                    {getTabIcon('personal')}
+                    Personal
+                  </TabsTrigger>
+                  <TabsTrigger value="education" className="flex items-center gap-2 text-xs font-medium data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                    {getTabIcon('education')}
+                    Education
+                  </TabsTrigger>
+                  <TabsTrigger value="experience" className="flex items-center gap-2 text-xs font-medium data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                    {getTabIcon('experience')}
+                    Experience
+                  </TabsTrigger>
+                  <TabsTrigger value="projects" className="flex items-center gap-2 text-xs font-medium data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                    {getTabIcon('projects')}
+                    Projects
+                  </TabsTrigger>
+                  <TabsTrigger value="skills" className="flex items-center gap-2 text-xs font-medium data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                    {getTabIcon('skills')}
+                    Skills
+                  </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="personal" className="space-y-4">
-                  <div className="flex items-center gap-2 mb-4">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                    <h3 className="text-lg font-semibold">Personal Details</h3>
+                  <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
+                    <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <User className="w-4 h-4 text-blue-600" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900">Personal Information</h3>
+                      <p className="text-sm text-gray-600">Add your basic contact details and professional summary</p>
+                    </div>
                   </div>
                   <PersonalDetailsForm 
                     data={resumeData.personalDetails}
@@ -177,9 +215,14 @@ const ResumeBuilder = () => {
                 </TabsContent>
 
                 <TabsContent value="education" className="space-y-4">
-                  <div className="flex items-center gap-2 mb-4">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <h3 className="text-lg font-semibold">Education</h3>
+                  <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
+                    <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                      <FileText className="w-4 h-4 text-green-600" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900">Education Background</h3>
+                      <p className="text-sm text-gray-600">List your academic qualifications and achievements</p>
+                    </div>
                   </div>
                   <EducationForm 
                     data={resumeData.education}
@@ -188,9 +231,14 @@ const ResumeBuilder = () => {
                 </TabsContent>
 
                 <TabsContent value="experience" className="space-y-4">
-                  <div className="flex items-center gap-2 mb-4">
-                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                    <h3 className="text-lg font-semibold">Work Experience</h3>
+                  <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
+                    <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                      <CheckCircle2 className="w-4 h-4 text-purple-600" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900">Work Experience</h3>
+                      <p className="text-sm text-gray-600">Showcase your professional experience and achievements</p>
+                    </div>
                   </div>
                   <ExperienceForm 
                     data={resumeData.experience}
@@ -199,9 +247,14 @@ const ResumeBuilder = () => {
                 </TabsContent>
 
                 <TabsContent value="projects" className="space-y-4">
-                  <div className="flex items-center gap-2 mb-4">
-                    <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                    <h3 className="text-lg font-semibold">Projects</h3>
+                  <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
+                    <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                      <Sparkles className="w-4 h-4 text-orange-600" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900">Projects & Portfolio</h3>
+                      <p className="text-sm text-gray-600">Highlight your key projects and technical work</p>
+                    </div>
                   </div>
                   <ProjectsForm 
                     data={resumeData.projects}
@@ -210,9 +263,14 @@ const ResumeBuilder = () => {
                 </TabsContent>
 
                 <TabsContent value="skills" className="space-y-4">
-                  <div className="flex items-center gap-2 mb-4">
-                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                    <h3 className="text-lg font-semibold">Skills & Technologies</h3>
+                  <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
+                    <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                      <FileText className="w-4 h-4 text-red-600" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900">Skills & Technologies</h3>
+                      <p className="text-sm text-gray-600">List your technical skills and competencies</p>
+                    </div>
                   </div>
                   <SkillsForm 
                     data={resumeData.skills}
@@ -222,15 +280,23 @@ const ResumeBuilder = () => {
               </Tabs>
             </Card>
 
-            {/* Progress Indicator */}
-            <Card className="p-4">
-              <div className="flex items-center justify-between text-sm text-gray-600">
-                <span>Resume Completion</span>
-                <span>{calculateCompletion()}%</span>
+            {/* Enhanced Progress Indicator */}
+            <Card className="p-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center">
+                    <CheckCircle2 className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">Resume Progress</h3>
+                    <p className="text-sm text-gray-600">Complete all sections for best results</p>
+                  </div>
+                </div>
+                <span className="text-2xl font-bold text-blue-600">{calculateCompletion()}%</span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+              <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
                 <div 
-                  className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
+                  className="bg-gradient-to-r from-blue-500 to-indigo-500 h-3 rounded-full transition-all duration-500 ease-out" 
                   style={{ width: `${calculateCompletion()}%` }}
                 ></div>
               </div>
@@ -239,12 +305,19 @@ const ResumeBuilder = () => {
 
           {/* Right Panel - Preview */}
           <div className="lg:sticky lg:top-8 lg:h-fit">
-            <Card className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold">Live Preview</h3>
-                <div className="text-sm text-gray-500">Modern Template</div>
+            <Card className="p-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+              <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Live Preview</h3>
+                  <p className="text-sm text-gray-600">Your resume updates in real-time</p>
+                </div>
+                <div className="px-3 py-1 bg-blue-100 text-blue-700 text-sm font-medium rounded-full">
+                  Professional Template
+                </div>
               </div>
-              <ResumePreview data={resumeData} />
+              <div className="bg-white rounded-lg border-2 border-gray-100 overflow-hidden">
+                <ResumePreview data={resumeData} />
+              </div>
             </Card>
           </div>
         </div>
@@ -268,8 +341,11 @@ const AuthWrapper: React.FC<{ onAuthSuccess: () => void; showAuth: boolean }> = 
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading Smart Resume Builder...</p>
+        </div>
       </div>
     );
   }
