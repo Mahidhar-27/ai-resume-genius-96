@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -9,7 +9,10 @@ import ExperienceForm from '@/components/resume/ExperienceForm';
 import SkillsForm from '@/components/resume/SkillsForm';
 import ProjectsForm from '@/components/resume/ProjectsForm';
 import ResumePreview from '@/components/resume/ResumePreview';
-import { Download, Sparkles, Save } from 'lucide-react';
+import AuthForm from '@/components/auth/AuthForm';
+import { AuthProvider, useAuth } from '@/hooks/useAuth';
+import { useResume } from '@/hooks/useResume';
+import { Download, Sparkles, Save, LogOut, User } from 'lucide-react';
 
 export interface ResumeData {
   personalDetails: {
@@ -51,29 +54,18 @@ export interface ResumeData {
   };
 }
 
-const Index = () => {
-  const [resumeData, setResumeData] = useState<ResumeData>({
-    personalDetails: {
-      fullName: '',
-      email: '',
-      phone: '',
-      location: '',
-      linkedin: '',
-      portfolio: '',
-      summary: ''
-    },
-    education: [],
-    experience: [],
-    projects: [],
-    skills: {
-      technical: [],
-      languages: [],
-      frameworks: [],
-      tools: []
-    }
-  });
-
+const ResumeBuilder = () => {
+  const { user, signOut } = useAuth();
+  const { currentResume, isLoading, isSaving, saveResume, convertToResumeData } = useResume();
+  const [resumeData, setResumeData] = useState<ResumeData>(convertToResumeData(null));
   const [activeTab, setActiveTab] = useState('personal');
+
+  // Update resume data when current resume changes
+  useEffect(() => {
+    if (currentResume) {
+      setResumeData(convertToResumeData(currentResume));
+    }
+  }, [currentResume]);
 
   const updateResumeData = (section: keyof ResumeData, data: any) => {
     setResumeData(prev => ({
@@ -82,20 +74,40 @@ const Index = () => {
     }));
   };
 
+  const handleSave = async () => {
+    await saveResume(resumeData);
+  };
+
   const handleExport = () => {
     // TODO: Implement PDF export functionality
     console.log('Exporting resume as PDF...');
-  };
-
-  const handleSave = () => {
-    // TODO: Implement save functionality
-    console.log('Saving resume...');
   };
 
   const handleAISuggestions = () => {
     // TODO: Implement AI suggestions
     console.log('Getting AI suggestions...');
   };
+
+  const calculateCompletion = () => {
+    let completed = 0;
+    let total = 5;
+
+    if (resumeData.personalDetails.fullName && resumeData.personalDetails.email) completed++;
+    if (resumeData.education.length > 0) completed++;
+    if (resumeData.experience.length > 0) completed++;
+    if (resumeData.projects.length > 0) completed++;
+    if (resumeData.skills.technical.length > 0 || resumeData.skills.languages.length > 0) completed++;
+
+    return Math.round((completed / total) * 100);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
@@ -107,18 +119,31 @@ const Index = () => {
               <h1 className="text-2xl font-bold text-gray-900">Smart Resume Builder</h1>
               <p className="text-gray-600">Create your professional resume with AI-powered suggestions</p>
             </div>
-            <div className="flex gap-3">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <User className="w-4 h-4" />
+                {user?.email}
+              </div>
               <Button variant="outline" onClick={handleAISuggestions} className="gap-2">
                 <Sparkles className="w-4 h-4" />
                 AI Suggestions
               </Button>
-              <Button variant="outline" onClick={handleSave} className="gap-2">
+              <Button 
+                variant="outline" 
+                onClick={handleSave} 
+                disabled={isSaving}
+                className="gap-2"
+              >
                 <Save className="w-4 h-4" />
-                Save Draft
+                {isSaving ? 'Saving...' : 'Save Draft'}
               </Button>
               <Button onClick={handleExport} className="gap-2 bg-blue-600 hover:bg-blue-700">
                 <Download className="w-4 h-4" />
                 Export PDF
+              </Button>
+              <Button variant="outline" onClick={signOut} className="gap-2">
+                <LogOut className="w-4 h-4" />
+                Sign Out
               </Button>
             </div>
           </div>
@@ -201,10 +226,13 @@ const Index = () => {
             <Card className="p-4">
               <div className="flex items-center justify-between text-sm text-gray-600">
                 <span>Resume Completion</span>
-                <span>60%</span>
+                <span>{calculateCompletion()}%</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-                <div className="bg-blue-600 h-2 rounded-full" style={{ width: '60%' }}></div>
+                <div 
+                  className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
+                  style={{ width: `${calculateCompletion()}%` }}
+                ></div>
               </div>
             </Card>
           </div>
@@ -223,6 +251,34 @@ const Index = () => {
       </div>
     </div>
   );
+};
+
+const Index = () => {
+  const [showAuth, setShowAuth] = useState(true);
+
+  return (
+    <AuthProvider>
+      <AuthWrapper onAuthSuccess={() => setShowAuth(false)} showAuth={showAuth} />
+    </AuthProvider>
+  );
+};
+
+const AuthWrapper: React.FC<{ onAuthSuccess: () => void; showAuth: boolean }> = ({ onAuthSuccess, showAuth }) => {
+  const { user, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <AuthForm onAuthSuccess={onAuthSuccess} />;
+  }
+
+  return <ResumeBuilder />;
 };
 
 export default Index;
