@@ -4,20 +4,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useToast } from '@/components/ui/use-toast';
 import type { ResumeData } from '@/pages/Index';
+import type { Tables } from '@/integrations/supabase/types';
 
-interface Resume {
-  id: string;
-  title: string;
-  personal_details: any;
-  education: any[];
-  experience: any[];
-  projects: any[];
-  skills: any;
-  template_id: string;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-}
+type Resume = Tables<'resumes'>;
 
 export const useResume = () => {
   const { user } = useAuth();
@@ -168,24 +157,31 @@ export const useResume = () => {
       };
     }
 
+    // Safely parse JSON data with fallbacks
+    const personalDetails = (resume.personal_details as any) || {};
+    const education = Array.isArray(resume.education) ? resume.education : [];
+    const experience = Array.isArray(resume.experience) ? resume.experience : [];
+    const projects = Array.isArray(resume.projects) ? resume.projects : [];
+    const skills = (resume.skills as any) || { technical: [], languages: [], frameworks: [], tools: [] };
+
     return {
       personalDetails: {
-        fullName: resume.personal_details?.fullName || '',
-        email: resume.personal_details?.email || '',
-        phone: resume.personal_details?.phone || '',
-        location: resume.personal_details?.location || '',
-        linkedin: resume.personal_details?.linkedin || '',
-        portfolio: resume.personal_details?.portfolio || '',
-        summary: resume.personal_details?.summary || ''
+        fullName: personalDetails?.fullName || '',
+        email: personalDetails?.email || '',
+        phone: personalDetails?.phone || '',
+        location: personalDetails?.location || '',
+        linkedin: personalDetails?.linkedin || '',
+        portfolio: personalDetails?.portfolio || '',
+        summary: personalDetails?.summary || ''
       },
-      education: resume.education || [],
-      experience: resume.experience || [],
-      projects: resume.projects || [],
-      skills: resume.skills || {
-        technical: [],
-        languages: [],
-        frameworks: [],
-        tools: []
+      education,
+      experience,
+      projects,
+      skills: {
+        technical: Array.isArray(skills.technical) ? skills.technical : [],
+        languages: Array.isArray(skills.languages) ? skills.languages : [],
+        frameworks: Array.isArray(skills.frameworks) ? skills.frameworks : [],
+        tools: Array.isArray(skills.tools) ? skills.tools : []
       }
     };
   };
