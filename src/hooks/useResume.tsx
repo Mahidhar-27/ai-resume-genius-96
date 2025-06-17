@@ -157,11 +157,11 @@ export const useResume = () => {
       };
     }
 
-    // Safely parse JSON data with fallbacks
+    // Safely parse JSON data with fallbacks and proper type casting
     const personalDetails = (resume.personal_details as any) || {};
-    const education = Array.isArray(resume.education) ? resume.education : [];
-    const experience = Array.isArray(resume.experience) ? resume.experience : [];
-    const projects = Array.isArray(resume.projects) ? resume.projects : [];
+    const education = Array.isArray(resume.education) ? resume.education as any[] : [];
+    const experience = Array.isArray(resume.experience) ? resume.experience as any[] : [];
+    const projects = Array.isArray(resume.projects) ? resume.projects as any[] : [];
     const skills = (resume.skills as any) || { technical: [], languages: [], frameworks: [], tools: [] };
 
     return {
@@ -174,9 +174,9 @@ export const useResume = () => {
         portfolio: personalDetails?.portfolio || '',
         summary: personalDetails?.summary || ''
       },
-      education,
-      experience,
-      projects,
+      education: education as ResumeData['education'],
+      experience: experience as ResumeData['experience'],
+      projects: projects as ResumeData['projects'],
       skills: {
         technical: Array.isArray(skills.technical) ? skills.technical : [],
         languages: Array.isArray(skills.languages) ? skills.languages : [],
