@@ -3,6 +3,8 @@ import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { sanitizeInput, validateEmail, validateUrl, validateTextLength } from '@/utils/validation';
+import { useToast } from '@/components/ui/use-toast';
 
 interface PersonalDetails {
   fullName: string;
@@ -20,11 +22,66 @@ interface PersonalDetailsFormProps {
 }
 
 const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({ data, onChange }) => {
+  const { toast } = useToast();
+
   const updateField = (field: keyof PersonalDetails, value: string) => {
-    onChange({
-      ...data,
-      [field]: value
-    });
+    let sanitizedValue = value;
+    let isValid = true;
+
+    // Apply field-specific validation and sanitization
+    switch (field) {
+      case 'fullName':
+        sanitizedValue = sanitizeInput(value, 100);
+        if (!validateTextLength(sanitizedValue, 100)) isValid = false;
+        break;
+      case 'email':
+        sanitizedValue = sanitizeInput(value, 320);
+        if (sanitizedValue && !validateEmail(sanitizedValue)) {
+          toast({
+            title: "Invalid email format",
+            description: "Please enter a valid email address.",
+            variant: "destructive"
+          });
+          return;
+        }
+        break;
+      case 'phone':
+        sanitizedValue = sanitizeInput(value, 20);
+        break;
+      case 'location':
+        sanitizedValue = sanitizeInput(value, 100);
+        break;
+      case 'linkedin':
+      case 'portfolio':
+        sanitizedValue = sanitizeInput(value, 500);
+        if (sanitizedValue && !validateUrl(sanitizedValue)) {
+          toast({
+            title: "Invalid URL format",
+            description: "Please enter a valid URL (e.g., https://example.com).",
+            variant: "destructive"
+          });
+          return;
+        }
+        break;
+      case 'summary':
+        sanitizedValue = sanitizeInput(value, 1000);
+        if (!validateTextLength(sanitizedValue, 1000)) {
+          toast({
+            title: "Summary too long",
+            description: "Please keep your summary under 1000 characters.",
+            variant: "destructive"
+          });
+          return;
+        }
+        break;
+    }
+
+    if (isValid) {
+      onChange({
+        ...data,
+        [field]: sanitizedValue
+      });
+    }
   };
 
   return (
@@ -38,6 +95,8 @@ const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({ data, onChang
             value={data.fullName}
             onChange={(e) => updateField('fullName', e.target.value)}
             className="transition-all duration-200 focus:ring-2 focus:ring-blue-500"
+            maxLength={100}
+            required
           />
         </div>
         <div className="space-y-2">
@@ -49,6 +108,8 @@ const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({ data, onChang
             value={data.email}
             onChange={(e) => updateField('email', e.target.value)}
             className="transition-all duration-200 focus:ring-2 focus:ring-blue-500"
+            maxLength={320}
+            required
           />
         </div>
       </div>
@@ -62,6 +123,7 @@ const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({ data, onChang
             value={data.phone}
             onChange={(e) => updateField('phone', e.target.value)}
             className="transition-all duration-200 focus:ring-2 focus:ring-blue-500"
+            maxLength={20}
           />
         </div>
         <div className="space-y-2">
@@ -72,6 +134,7 @@ const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({ data, onChang
             value={data.location}
             onChange={(e) => updateField('location', e.target.value)}
             className="transition-all duration-200 focus:ring-2 focus:ring-blue-500"
+            maxLength={100}
           />
         </div>
       </div>
@@ -81,20 +144,22 @@ const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({ data, onChang
           <Label htmlFor="linkedin">LinkedIn Profile</Label>
           <Input
             id="linkedin"
-            placeholder="linkedin.com/in/johndoe"
+            placeholder="https://linkedin.com/in/johndoe"
             value={data.linkedin}
             onChange={(e) => updateField('linkedin', e.target.value)}
             className="transition-all duration-200 focus:ring-2 focus:ring-blue-500"
+            maxLength={500}
           />
         </div>
         <div className="space-y-2">
           <Label htmlFor="portfolio">Portfolio/Website</Label>
           <Input
             id="portfolio"
-            placeholder="johndoe.com"
+            placeholder="https://johndoe.com"
             value={data.portfolio}
             onChange={(e) => updateField('portfolio', e.target.value)}
             className="transition-all duration-200 focus:ring-2 focus:ring-blue-500"
+            maxLength={500}
           />
         </div>
       </div>
@@ -107,8 +172,11 @@ const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({ data, onChang
           value={data.summary}
           onChange={(e) => updateField('summary', e.target.value)}
           className="min-h-[100px] transition-all duration-200 focus:ring-2 focus:ring-blue-500"
+          maxLength={1000}
         />
-        <p className="text-xs text-gray-500">2-3 sentences highlighting your key strengths and career goals</p>
+        <p className="text-xs text-gray-500">
+          {data.summary.length}/1000 characters - 2-3 sentences highlighting your key strengths and career goals
+        </p>
       </div>
     </div>
   );

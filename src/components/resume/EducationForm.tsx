@@ -5,6 +5,8 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Plus, X } from 'lucide-react';
+import { sanitizeInput, validateTextLength } from '@/utils/validation';
+import { useToast } from '@/components/ui/use-toast';
 
 interface Education {
   id: string;
@@ -20,6 +22,8 @@ interface EducationFormProps {
 }
 
 const EducationForm: React.FC<EducationFormProps> = ({ data, onChange }) => {
+  const { toast } = useToast();
+
   const addEducation = () => {
     const newEducation: Education = {
       id: Date.now().toString(),
@@ -36,8 +40,35 @@ const EducationForm: React.FC<EducationFormProps> = ({ data, onChange }) => {
   };
 
   const updateEducation = (id: string, field: keyof Education, value: string) => {
+    let sanitizedValue = value;
+    let isValid = true;
+
+    // Apply field-specific validation and sanitization
+    switch (field) {
+      case 'degree':
+      case 'institution':
+        sanitizedValue = sanitizeInput(value, 200);
+        if (!validateTextLength(sanitizedValue, 200)) isValid = false;
+        break;
+      case 'year':
+        sanitizedValue = sanitizeInput(value, 10);
+        break;
+      case 'gpa':
+        sanitizedValue = sanitizeInput(value, 10);
+        break;
+    }
+
+    if (!isValid) {
+      toast({
+        title: "Input too long",
+        description: "Please keep your input within the character limit.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     onChange(data.map(edu => 
-      edu.id === id ? { ...edu, [field]: value } : edu
+      edu.id === id ? { ...edu, [field]: sanitizedValue } : edu
     ));
   };
 
@@ -66,6 +97,8 @@ const EducationForm: React.FC<EducationFormProps> = ({ data, onChange }) => {
                   value={education.degree}
                   onChange={(e) => updateEducation(education.id, 'degree', e.target.value)}
                   className="transition-all duration-200 focus:ring-2 focus:ring-green-500"
+                  maxLength={200}
+                  required
                 />
               </div>
               <div className="space-y-2">
@@ -75,6 +108,8 @@ const EducationForm: React.FC<EducationFormProps> = ({ data, onChange }) => {
                   value={education.institution}
                   onChange={(e) => updateEducation(education.id, 'institution', e.target.value)}
                   className="transition-all duration-200 focus:ring-2 focus:ring-green-500"
+                  maxLength={200}
+                  required
                 />
               </div>
             </div>
@@ -87,6 +122,8 @@ const EducationForm: React.FC<EducationFormProps> = ({ data, onChange }) => {
                   value={education.year}
                   onChange={(e) => updateEducation(education.id, 'year', e.target.value)}
                   className="transition-all duration-200 focus:ring-2 focus:ring-green-500"
+                  maxLength={10}
+                  required
                 />
               </div>
               <div className="space-y-2">
@@ -96,6 +133,7 @@ const EducationForm: React.FC<EducationFormProps> = ({ data, onChange }) => {
                   value={education.gpa || ''}
                   onChange={(e) => updateEducation(education.id, 'gpa', e.target.value)}
                   className="transition-all duration-200 focus:ring-2 focus:ring-green-500"
+                  maxLength={10}
                 />
               </div>
             </div>

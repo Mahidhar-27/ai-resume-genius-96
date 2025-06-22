@@ -7,7 +7,9 @@ import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
-import { Loader2, Mail, Lock, User } from 'lucide-react';
+import { Loader2, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
+import PasswordStrength from '@/components/ui/password-strength';
+import { validatePassword, sanitizeInput, validateEmail, getGenericErrorMessage } from '@/utils/validation';
 
 interface AuthFormProps {
   onAuthSuccess: () => void;
@@ -15,19 +17,87 @@ interface AuthFormProps {
 
 const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordValidation, setPasswordValidation] = useState({ isValid: false, errors: [], strength: 0 });
   const [formData, setFormData] = useState({
     email: '',
     password: '',
+    confirmPassword: '',
     fullName: ''
   });
   const { toast } = useToast();
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    let sanitizedValue = value;
+    
+    // Sanitize inputs based on field type
+    if (field === 'fullName') {
+      sanitizedValue = sanitizeInput(value, 100);
+    } else if (field === 'email') {
+      sanitizedValue = sanitizeInput(value, 320);
+    }
+    
+    setFormData(prev => ({ ...prev, [field]: sanitizedValue }));
+    
+    // Real-time password validation
+    if (field === 'password') {
+      const validation = validatePassword(value);
+      setPasswordValidation(validation);
+    }
+  };
+
+  const validateForm = (isSignUp: boolean) => {
+    // Email validation
+    if (!validateEmail(formData.email)) {
+      toast({
+        title: "Invalid email",
+        description: "Please enter a valid email address.",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    // Password validation
+    if (isSignUp && !passwordValidation.isValid) {
+      toast({
+        title: "Password requirements not met",
+        description: "Please ensure your password meets all requirements.",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    // Password confirmation for signup
+    if (isSignUp && formData.password !== formData.confirmPassword) {
+      toast({
+        title: "Passwords don't match",
+        description: "Please ensure both password fields match.",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    // Full name validation for signup
+    if (isSignUp && formData.fullName.length < 2) {
+      toast({
+        title: "Name required",
+        description: "Please enter your full name (at least 2 characters).",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    return true;
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateForm(true)) {
+      return;
+    }
+    
     setIsLoading(true);
 
     try {
@@ -42,19 +112,12 @@ const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
       });
 
       if (error) {
-        if (error.message.includes('already registered')) {
-          toast({
-            title: "Account already exists",
-            description: "Please sign in with your existing account or use a different email.",
-            variant: "destructive"
-          });
-        } else {
-          toast({
-            title: "Sign up failed",
-            description: error.message,
-            variant: "destructive"
-          });
-        }
+        console.error('Signup error:', error);
+        toast({
+          title: "Sign up failed",
+          description: getGenericErrorMessage('auth'),
+          variant: "destructive"
+        });
       } else if (data.user) {
         toast({
           title: "Account created successfully!",
@@ -63,9 +126,10 @@ const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
         onAuthSuccess();
       }
     } catch (error) {
+      console.error('Signup exception:', error);
       toast({
         title: "An error occurred",
-        description: "Please try again later.",
+        description: getGenericErrorMessage('network'),
         variant: "destructive"
       });
     } finally {
@@ -75,6 +139,11 @@ const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateForm(false)) {
+      return;
+    }
+    
     setIsLoading(true);
 
     try {
@@ -84,19 +153,12 @@ const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
       });
 
       if (error) {
-        if (error.message.includes('Invalid login credentials')) {
-          toast({
-            title: "Invalid credentials",
-            description: "Please check your email and password and try again.",
-            variant: "destructive"
-          });
-        } else {
-          toast({
-            title: "Sign in failed",
-            description: error.message,
-            variant: "destructive"
-          });
-        }
+        console.error('Signin error:', error);
+        toast({
+          title: "Sign in failed",
+          description: getGenericErrorMessage('auth'),
+          variant: "destructive"
+        });
       } else {
         toast({
           title: "Welcome back!",
@@ -105,9 +167,10 @@ const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
         onAuthSuccess();
       }
     } catch (error) {
+      console.error('Signin exception:', error);
       toast({
         title: "An error occurred",
-        description: "Please try again later.",
+        description: getGenericErrorMessage('network'),
         variant: "destructive"
       });
     } finally {
@@ -156,13 +219,26 @@ const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
                   <Lock className="absolute left-3 top-3.5 h-4 w-4 text-gray-400" />
                   <Input
                     id="signin-password"
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     placeholder="Enter your password"
                     value={formData.password}
                     onChange={(e) => handleInputChange('password', e.target.value)}
-                    className="pl-10 h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                    className="pl-10 pr-10 h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
                     required
                   />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-12 px-3 py-2 hover:bg-transparent"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4 text-gray-400" />
+                    ) : (
+                      <Eye className="h-4 w-4 text-gray-400" />
+                    )}
+                  </Button>
                 </div>
               </div>
 
@@ -193,6 +269,8 @@ const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
                     onChange={(e) => handleInputChange('fullName', e.target.value)}
                     className="pl-10 h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
                     required
+                    minLength={2}
+                    maxLength={100}
                   />
                 </div>
               </div>
@@ -209,6 +287,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
                     onChange={(e) => handleInputChange('email', e.target.value)}
                     className="pl-10 h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
                     required
+                    maxLength={320}
                   />
                 </div>
               </div>
@@ -219,18 +298,68 @@ const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
                   <Lock className="absolute left-3 top-3.5 h-4 w-4 text-gray-400" />
                   <Input
                     id="signup-password"
-                    type="password"
-                    placeholder="Create a secure password (min 6 characters)"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Create a secure password"
                     value={formData.password}
                     onChange={(e) => handleInputChange('password', e.target.value)}
-                    className="pl-10 h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-                    minLength={6}
+                    className="pl-10 pr-10 h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                    required
+                    minLength={8}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-12 px-3 py-2 hover:bg-transparent"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4 text-gray-400" />
+                    ) : (
+                      <Eye className="h-4 w-4 text-gray-400" />
+                    )}
+                  </Button>
+                </div>
+                <PasswordStrength 
+                  strength={passwordValidation.strength} 
+                  errors={passwordValidation.errors} 
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="confirm-password" className="text-sm font-medium text-gray-700">Confirm Password</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-3.5 h-4 w-4 text-gray-400" />
+                  <Input
+                    id="confirm-password"
+                    type={showConfirmPassword ? "text" : "password"}
+                    placeholder="Confirm your password"
+                    value={formData.confirmPassword}
+                    onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+                    className="pl-10 pr-10 h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
                     required
                   />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-12 px-3 py-2 hover:bg-transparent"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff className="h-4 w-4 text-gray-400" />
+                    ) : (
+                      <Eye className="h-4 w-4 text-gray-400" />
+                    )}
+                  </Button>
                 </div>
               </div>
 
-              <Button type="submit" className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-medium" disabled={isLoading}>
+              <Button 
+                type="submit" 
+                className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-medium" 
+                disabled={isLoading || !passwordValidation.isValid}
+              >
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
