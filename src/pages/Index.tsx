@@ -13,6 +13,7 @@ import AuthForm from '@/components/auth/AuthForm';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import { useResume } from '@/hooks/useResume';
 import { Download, Sparkles, Save, LogOut, User, FileText, CheckCircle2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 export interface ResumeData {
   personalDetails: {
@@ -59,13 +60,14 @@ const ResumeBuilder = () => {
   const { currentResume, isLoading, isSaving, saveResume, convertToResumeData } = useResume();
   const [resumeData, setResumeData] = useState<ResumeData>(convertToResumeData(null));
   const [activeTab, setActiveTab] = useState('personal');
+  const { toast } = useToast();
 
   // Update resume data when current resume changes
   useEffect(() => {
     if (currentResume) {
       setResumeData(convertToResumeData(currentResume));
     }
-  }, [currentResume]);
+  }, [currentResume, convertToResumeData]);
 
   const updateResumeData = (section: keyof ResumeData, data: any) => {
     setResumeData(prev => ({
@@ -75,17 +77,30 @@ const ResumeBuilder = () => {
   };
 
   const handleSave = async () => {
-    await saveResume(resumeData);
+    try {
+      await saveResume(resumeData);
+    } catch (error) {
+      console.error('Save error:', error);
+      toast({
+        title: "Save failed",
+        description: "Unable to save your resume. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleExport = () => {
-    // TODO: Implement PDF export functionality
-    console.log('Exporting resume as PDF...');
+    toast({
+      title: "Export feature coming soon",
+      description: "PDF export functionality will be available in the next update."
+    });
   };
 
   const handleAISuggestions = () => {
-    // TODO: Implement AI suggestions
-    console.log('Getting AI suggestions...');
+    toast({
+      title: "AI Enhancement coming soon",
+      description: "AI-powered resume suggestions will be available in the next update."
+    });
   };
 
   const calculateCompletion = () => {
@@ -135,7 +150,7 @@ const ResumeBuilder = () => {
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">Smart Resume Builder</h1>
-                <p className="text-sm text-gray-600">Create professional resumes with AI-powered assistance</p>
+                <p className="text-sm text-gray-600">Create professional resumes with AI assistance</p>
               </div>
             </div>
             <div className="flex items-center gap-3">

@@ -1,10 +1,13 @@
 
 import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { X, Plus } from 'lucide-react';
+import { Card } from '@/components/ui/card';
+import { Plus, X, Code, Globe, Wrench, Monitor } from 'lucide-react';
+import { sanitizeInput, validateTextLength } from '@/utils/validation';
+import { useToast } from '@/components/ui/use-toast';
 
 interface Skills {
   technical: string[];
@@ -19,133 +22,158 @@ interface SkillsFormProps {
 }
 
 const SkillsForm: React.FC<SkillsFormProps> = ({ data, onChange }) => {
-  const [newSkillInputs, setNewSkillInputs] = useState({
+  const [newSkills, setNewSkills] = useState({
     technical: '',
     languages: '',
     frameworks: '',
     tools: ''
   });
+  const { toast } = useToast();
 
   const addSkill = (category: keyof Skills) => {
-    const skill = newSkillInputs[category].trim();
-    if (skill && !data[category].includes(skill)) {
-      onChange({
-        ...data,
-        [category]: [...data[category], skill]
-      });
-      setNewSkillInputs({
-        ...newSkillInputs,
-        [category]: ''
-      });
-    }
-  };
+    const skill = newSkills[category].trim();
+    
+    if (!skill) return;
 
-  const removeSkill = (category: keyof Skills, skill: string) => {
+    // Sanitize and validate
+    const sanitizedSkill = sanitizeInput(skill, 50);
+    
+    if (!validateTextLength(sanitizedSkill, 50)) {
+      toast({
+        title: "Skill name too long",
+        description: "Skill names must be less than 50 characters.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (data[category].includes(sanitizedSkill)) {
+      toast({
+        title: "Duplicate skill",
+        description: "This skill is already added.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     onChange({
       ...data,
-      [category]: data[category].filter(s => s !== skill)
+      [category]: [...data[category], sanitizedSkill]
+    });
+
+    setNewSkills({ ...newSkills, [category]: '' });
+  };
+
+  const removeSkill = (category: keyof Skills, skillToRemove: string) => {
+    onChange({
+      ...data,
+      [category]: data[category].filter(skill => skill !== skillToRemove)
     });
   };
 
-  const handleInputChange = (category: keyof Skills, value: string) => {
-    setNewSkillInputs({
-      ...newSkillInputs,
-      [category]: value
-    });
-  };
-
-  const handleKeyPress = (category: keyof Skills, e: React.KeyboardEvent) => {
+  const handleKeyPress = (e: React.KeyboardEvent, category: keyof Skills) => {
     if (e.key === 'Enter') {
       e.preventDefault();
       addSkill(category);
     }
   };
 
-  const SkillSection = ({ 
-    title, 
-    category, 
-    placeholder, 
-    color 
-  }: { 
-    title: string; 
-    category: keyof Skills; 
-    placeholder: string;
-    color: string;
-  }) =>  (
-    <div className="space-y-3">
-      <Label className="text-sm font-medium">{title}</Label>
-      <div className="flex gap-2">
-        <Input
-          placeholder={placeholder}
-          value={newSkillInputs[category]}
-          onChange={(e) => handleInputChange(category, e.target.value)}
-          onKeyPress={(e) => handleKeyPress(category, e)}
-          className="flex-1 transition-all duration-200 focus:ring-2 focus:ring-red-500"
-        />
-        <Button
-          type="button"
-          size="sm"
-          onClick={() => addSkill(category)}
-          className={`${color} hover:opacity-90`}
-        >
-          <Plus className="w-4 h-4" />
-        </Button>
-      </div>
-      <div className="flex flex-wrap gap-2">
-        {data[category].map((skill, index) => (
-          <Badge
-            key={index}
-            variant="secondary"
-            className="bg-gray-100 hover:bg-gray-200 transition-colors duration-200"
-          >
-            {skill}
-            <button
-              onClick={() => removeSkill(category, skill)}
-              className="ml-2 hover:text-red-500"
-            >
-              <X className="w-3 h-3" />
-            </button>
-          </Badge>
-        ))}
-      </div>
-    </div>
-  );
+  const updateNewSkill = (category: keyof Skills, value: string) => {
+    const sanitizedValue = sanitizeInput(value, 50);
+    setNewSkills({ ...newSkills, [category]: sanitizedValue });
+  };
+
+  const skillCategories = [
+    {
+      key: 'technical' as keyof Skills,
+      title: 'Technical Skills',
+      icon: Code,
+      placeholder: 'JavaScript, Python, SQL',
+      color: 'blue'
+    },
+    {
+      key: 'languages' as keyof Skills,
+      title: 'Programming Languages',
+      icon: Globe,
+      placeholder: 'JavaScript, TypeScript, Python',
+      color: 'green'
+    },
+    {
+      key: 'frameworks' as keyof Skills,
+      title: 'Frameworks & Libraries',
+      icon: Monitor,
+      placeholder: 'React, Node.js, Express',
+      color: 'purple'
+    },
+    {
+      key: 'tools' as keyof Skills,
+      title: 'Tools & Technologies',
+      icon: Wrench,
+      placeholder: 'Git, Docker, AWS',
+      color: 'orange'
+    }
+  ];
 
   return (
     <div className="space-y-6">
-      <SkillSection
-        title="Technical Skills"
-        category="technical"
-        placeholder="JavaScript, Python, SQL..."
-        color="bg-blue-600"
-      />
-      
-      <SkillSection
-        title="Programming Languages"
-        category="languages"
-        placeholder="Java, C++, TypeScript..."
-        color="bg-green-600"
-      />
-      
-      <SkillSection
-        title="Frameworks & Libraries"
-        category="frameworks"
-        placeholder="React, Angular, Django..."
-        color="bg-purple-600"
-      />
-      
-      <SkillSection
-        title="Tools & Technologies"
-        category="tools"
-        placeholder="Git, Docker, AWS..."
-        color="bg-orange-600"
-      />
+      {skillCategories.map(({ key, title, icon: Icon, placeholder, color }) => (
+        <Card key={key} className="p-6 border border-gray-200 bg-gray-50/50">
+          <div className="flex items-center gap-2 mb-4">
+            <Icon className={`w-4 h-4 text-${color}-600`} />
+            <h4 className="font-medium text-gray-900">{title}</h4>
+          </div>
 
-      <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-        <p className="text-sm text-blue-800">
-          <strong>Pro Tip:</strong> Add skills that are relevant to your target job. Press Enter or click the + button to add each skill.
-        </p>
-      </div>
+          <div className="space-y-4">
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <Input
+                  placeholder={placeholder}
+                  value={newSkills[key]}
+                  onChange={(e) => updateNewSkill(key, e.target.value)}
+                  onKeyPress={(e) => handleKeyPress(e, key)}
+                  className="border-gray-200 focus:border-blue-500"
+                  maxLength={50}
+                />
+              </div>
+              <Button
+                type="button"
+                onClick={() => addSkill(key)}
+                disabled={!newSkills[key].trim()}
+                className={`bg-${color}-600 hover:bg-${color}-700 text-white`}
+              >
+                <Plus className="w-4 h-4" />
+              </Button>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {data[key].map((skill) => (
+                <Badge
+                  key={skill}
+                  variant="secondary"
+                  className={`bg-${color}-100 text-${color}-800 hover:bg-${color}-200 pr-1`}
+                >
+                  {skill}
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeSkill(key, skill)}
+                    className="ml-1 p-0 h-auto w-4 hover:bg-transparent"
+                  >
+                    <X className="w-3 h-3" />
+                  </Button>
+                </Badge>
+              ))}
+            </div>
+
+            {data[key].length === 0 && (
+              <p className="text-sm text-gray-500 italic">
+                No {title.toLowerCase()} added yet. Type a skill and press Enter or click + to add.
+              </p>
+            )}
+          </div>
+        </Card>
+      ))}
     </div>
   );
 };
