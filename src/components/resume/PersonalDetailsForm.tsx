@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { sanitizeInput, validateEmail, validateUrl, validateTextLength } from '@/utils/validation';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 interface PersonalDetails {
   fullName: string;
@@ -25,6 +25,8 @@ const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({ data, onChang
   const { toast } = useToast();
 
   const updateField = (field: keyof PersonalDetails, value: string) => {
+    console.log(`Updating ${field}:`, value); // Debug log
+    
     let sanitizedValue = value;
     let isValid = true;
 
@@ -77,10 +79,12 @@ const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({ data, onChang
     }
 
     if (isValid) {
-      onChange({
+      const updatedData = {
         ...data,
         [field]: sanitizedValue
-      });
+      };
+      console.log('Updated data:', updatedData); // Debug log
+      onChange(updatedData);
     }
   };
 
@@ -92,7 +96,7 @@ const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({ data, onChang
           <Input
             id="fullName"
             placeholder="John Doe"
-            value={data.fullName}
+            value={data.fullName || ''}
             onChange={(e) => updateField('fullName', e.target.value)}
             className="transition-all duration-200 focus:ring-2 focus:ring-blue-500"
             maxLength={100}
@@ -105,7 +109,7 @@ const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({ data, onChang
             id="email"
             type="email"
             placeholder="john@example.com"
-            value={data.email}
+            value={data.email || ''}
             onChange={(e) => updateField('email', e.target.value)}
             className="transition-all duration-200 focus:ring-2 focus:ring-blue-500"
             maxLength={320}
@@ -120,7 +124,7 @@ const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({ data, onChang
           <Input
             id="phone"
             placeholder="+1 (555) 123-4567"
-            value={data.phone}
+            value={data.phone || ''}
             onChange={(e) => updateField('phone', e.target.value)}
             className="transition-all duration-200 focus:ring-2 focus:ring-blue-500"
             maxLength={20}
@@ -131,7 +135,7 @@ const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({ data, onChang
           <Input
             id="location"
             placeholder="New York, NY"
-            value={data.location}
+            value={data.location || ''}
             onChange={(e) => updateField('location', e.target.value)}
             className="transition-all duration-200 focus:ring-2 focus:ring-blue-500"
             maxLength={100}
@@ -145,7 +149,7 @@ const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({ data, onChang
           <Input
             id="linkedin"
             placeholder="https://linkedin.com/in/johndoe"
-            value={data.linkedin}
+            value={data.linkedin || ''}
             onChange={(e) => updateField('linkedin', e.target.value)}
             className="transition-all duration-200 focus:ring-2 focus:ring-blue-500"
             maxLength={500}
@@ -156,7 +160,7 @@ const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({ data, onChang
           <Input
             id="portfolio"
             placeholder="https://johndoe.com"
-            value={data.portfolio}
+            value={data.portfolio || ''}
             onChange={(e) => updateField('portfolio', e.target.value)}
             className="transition-all duration-200 focus:ring-2 focus:ring-blue-500"
             maxLength={500}
@@ -169,13 +173,13 @@ const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({ data, onChang
         <Textarea
           id="summary"
           placeholder="A brief summary of your professional background and career objectives..."
-          value={data.summary}
+          value={data.summary || ''}
           onChange={(e) => updateField('summary', e.target.value)}
           className="min-h-[100px] transition-all duration-200 focus:ring-2 focus:ring-blue-500"
           maxLength={1000}
         />
         <p className="text-xs text-gray-500">
-          {data.summary.length}/1000 characters - 2-3 sentences highlighting your key strengths and career goals
+          {(data.summary || '').length}/1000 characters - 2-3 sentences highlighting your key strengths and career goals
         </p>
       </div>
     </div>

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Plus, X } from 'lucide-react';
 import { sanitizeInput, validateTextLength } from '@/utils/validation';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 interface Education {
   id: string;
@@ -32,14 +32,20 @@ const EducationForm: React.FC<EducationFormProps> = ({ data, onChange }) => {
       year: '',
       gpa: ''
     };
-    onChange([...data, newEducation]);
+    const updatedData = [...data, newEducation];
+    console.log('Adding education:', updatedData); // Debug log
+    onChange(updatedData);
   };
 
   const removeEducation = (id: string) => {
-    onChange(data.filter(edu => edu.id !== id));
+    const updatedData = data.filter(edu => edu.id !== id);
+    console.log('Removing education:', updatedData); // Debug log
+    onChange(updatedData);
   };
 
   const updateEducation = (id: string, field: keyof Education, value: string) => {
+    console.log(`Updating education ${id} field ${field}:`, value); // Debug log
+    
     let sanitizedValue = value;
     let isValid = true;
 
@@ -67,9 +73,11 @@ const EducationForm: React.FC<EducationFormProps> = ({ data, onChange }) => {
       return;
     }
 
-    onChange(data.map(edu => 
+    const updatedData = data.map(edu => 
       edu.id === id ? { ...edu, [field]: sanitizedValue } : edu
-    ));
+    );
+    console.log('Updated education data:', updatedData); // Debug log
+    onChange(updatedData);
   };
 
   return (
@@ -94,7 +102,7 @@ const EducationForm: React.FC<EducationFormProps> = ({ data, onChange }) => {
                 <Label>Degree/Program *</Label>
                 <Input
                   placeholder="Bachelor of Science in Computer Science"
-                  value={education.degree}
+                  value={education.degree || ''}
                   onChange={(e) => updateEducation(education.id, 'degree', e.target.value)}
                   className="transition-all duration-200 focus:ring-2 focus:ring-green-500"
                   maxLength={200}
@@ -105,7 +113,7 @@ const EducationForm: React.FC<EducationFormProps> = ({ data, onChange }) => {
                 <Label>Institution *</Label>
                 <Input
                   placeholder="University of Technology"
-                  value={education.institution}
+                  value={education.institution || ''}
                   onChange={(e) => updateEducation(education.id, 'institution', e.target.value)}
                   className="transition-all duration-200 focus:ring-2 focus:ring-green-500"
                   maxLength={200}
@@ -119,7 +127,7 @@ const EducationForm: React.FC<EducationFormProps> = ({ data, onChange }) => {
                 <Label>Graduation Year *</Label>
                 <Input
                   placeholder="2024"
-                  value={education.year}
+                  value={education.year || ''}
                   onChange={(e) => updateEducation(education.id, 'year', e.target.value)}
                   className="transition-all duration-200 focus:ring-2 focus:ring-green-500"
                   maxLength={10}

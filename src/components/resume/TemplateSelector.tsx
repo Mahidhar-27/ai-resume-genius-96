@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Check, Palette, Sparkles } from 'lucide-react';
 
@@ -34,25 +33,8 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
 
   const loadTemplates = async () => {
     try {
-      // Direct API call to resume_templates table
-      const response = await fetch(`https://bomqynyzztbibggernde.supabase.co/rest/v1/resume_templates?select=*`, {
-        headers: {
-          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJvbXF5bnl6enRiaWJnZ2VybmRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxNDMyNjYsImV4cCI6MjA2NTcxOTI2Nn0.oJKNn_bO5R_Wkhc3JDEQLm-C8rI0iD_V1k1BvzaeNF8',
-          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJvbXF5bnl6enRiaWJnZ2VybmRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxNDMyNjYsImV4cCI6MjA2NTcxOTI2Nn0.oJKNn_bO5R_Wkhc3JDEQLm-C8rI0iD_V1k1BvzaeNF8',
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch templates');
-      }
-      
-      const data = await response.json();
-      setTemplates(data || []);
-    } catch (error) {
-      console.error('Error loading templates:', error);
-      // Set default templates if database query fails
-      setTemplates([
+      // Set default templates directly since database might not be ready
+      const defaultTemplates = [
         {
           id: 'modern',
           name: 'Modern Professional',
@@ -81,7 +63,16 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
           template_data: { layout: 'minimal', colors: { primary: '#059669', secondary: '#10b981' } },
           is_premium: false
         }
-      ]);
+      ];
+      
+      setTemplates(defaultTemplates);
+    } catch (error) {
+      console.error('Error loading templates:', error);
+      toast({
+        title: "Error loading templates",
+        description: "Using default templates instead.",
+        variant: "destructive"
+      });
     } finally {
       setIsLoading(false);
     }

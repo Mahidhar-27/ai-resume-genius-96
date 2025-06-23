@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
 import { Plus, Trash2, Briefcase } from 'lucide-react';
 import { sanitizeInput, validateTextLength, validateUrl } from '@/utils/validation';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 interface Experience {
   id: string;
@@ -35,14 +35,20 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({ data, onChange }) => {
       description: '',
       location: ''
     };
-    onChange([...data, newExperience]);
+    const updatedData = [...data, newExperience];
+    console.log('Adding experience:', updatedData); // Debug log
+    onChange(updatedData);
   };
 
   const removeExperience = (id: string) => {
-    onChange(data.filter(exp => exp.id !== id));
+    const updatedData = data.filter(exp => exp.id !== id);
+    console.log('Removing experience:', updatedData); // Debug log
+    onChange(updatedData);
   };
 
   const updateExperience = (id: string, field: keyof Experience, value: string) => {
+    console.log(`Updating experience ${id} field ${field}:`, value); // Debug log
+    
     let sanitizedValue = value;
     let maxLength = 1000;
 
@@ -74,9 +80,11 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({ data, onChange }) => {
       return;
     }
 
-    onChange(data.map(exp => 
+    const updatedData = data.map(exp => 
       exp.id === id ? { ...exp, [field]: sanitizedValue } : exp
-    ));
+    );
+    console.log('Updated experience data:', updatedData); // Debug log
+    onChange(updatedData);
   };
 
   return (
@@ -104,7 +112,7 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({ data, onChange }) => {
               <Input
                 id={`title-${experience.id}`}
                 placeholder="Software Engineer"
-                value={experience.title}
+                value={experience.title || ''}
                 onChange={(e) => updateExperience(experience.id, 'title', e.target.value)}
                 className="border-gray-200 focus:border-blue-500"
                 maxLength={100}
@@ -116,7 +124,7 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({ data, onChange }) => {
               <Input
                 id={`company-${experience.id}`}
                 placeholder="Tech Corp"
-                value={experience.company}
+                value={experience.company || ''}
                 onChange={(e) => updateExperience(experience.id, 'company', e.target.value)}
                 className="border-gray-200 focus:border-blue-500"
                 maxLength={100}
@@ -128,7 +136,7 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({ data, onChange }) => {
               <Input
                 id={`duration-${experience.id}`}
                 placeholder="Jan 2020 - Present"
-                value={experience.duration}
+                value={experience.duration || ''}
                 onChange={(e) => updateExperience(experience.id, 'duration', e.target.value)}
                 className="border-gray-200 focus:border-blue-500"
                 maxLength={50}
@@ -140,7 +148,7 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({ data, onChange }) => {
               <Input
                 id={`location-${experience.id}`}
                 placeholder="San Francisco, CA"
-                value={experience.location}
+                value={experience.location || ''}
                 onChange={(e) => updateExperience(experience.id, 'location', e.target.value)}
                 className="border-gray-200 focus:border-blue-500"
                 maxLength={100}
@@ -153,13 +161,13 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({ data, onChange }) => {
             <Textarea
               id={`description-${experience.id}`}
               placeholder="Describe your responsibilities and achievements..."
-              value={experience.description}
+              value={experience.description || ''}
               onChange={(e) => updateExperience(experience.id, 'description', e.target.value)}
               className="min-h-[100px] border-gray-200 focus:border-blue-500 resize-none"
               maxLength={2000}
             />
             <div className="text-xs text-gray-500 text-right">
-              {experience.description.length}/2000 characters
+              {(experience.description || '').length}/2000 characters
             </div>
           </div>
         </Card>

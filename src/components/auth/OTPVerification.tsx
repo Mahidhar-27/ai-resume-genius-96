@@ -37,6 +37,7 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
     }
 
     setIsVerifying(true);
+    console.log('Verifying OTP for email:', email, 'OTP:', otp); // Debug log
 
     try {
       const { error } = await supabase.auth.verifyOtp({
@@ -53,6 +54,7 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
           variant: "destructive"
         });
       } else {
+        console.log('OTP verification successful'); // Debug log
         toast({
           title: "Email verified!",
           description: "Your account has been successfully verified."
@@ -73,6 +75,7 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
 
   const handleResendOTP = async () => {
     setIsResending(true);
+    console.log('Resending OTP for email:', email); // Debug log
 
     try {
       const { error } = await supabase.auth.resend({
@@ -88,6 +91,7 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
           variant: "destructive"
         });
       } else {
+        console.log('OTP resent successfully'); // Debug log
         toast({
           title: "Verification code resent",
           description: "A new verification code has been sent to your email."
@@ -103,6 +107,13 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
     } finally {
       setIsResending(false);
     }
+  };
+
+  const handleOTPInput = (value: string) => {
+    // Only allow digits and limit to 6 characters
+    const sanitizedValue = value.replace(/\D/g, '').slice(0, 6);
+    console.log('OTP input value:', sanitizedValue); // Debug log
+    setOtp(sanitizedValue);
   };
 
   return (
@@ -129,10 +140,11 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
               type="text"
               placeholder="Enter 6-digit code"
               value={otp}
-              onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+              onChange={(e) => handleOTPInput(e.target.value)}
               className="text-center text-2xl tracking-widest"
               maxLength={6}
               required
+              autoComplete="one-time-code"
             />
           </div>
 
