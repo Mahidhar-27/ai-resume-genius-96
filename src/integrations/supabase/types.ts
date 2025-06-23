@@ -33,15 +33,50 @@ export type Database = {
         }
         Relationships: []
       }
+      resume_templates: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_premium: boolean | null
+          name: string
+          preview_image: string | null
+          template_data: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_premium?: boolean | null
+          name: string
+          preview_image?: string | null
+          template_data: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_premium?: boolean | null
+          name?: string
+          preview_image?: string | null
+          template_data?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       resumes: {
         Row: {
           created_at: string | null
+          custom_template_data: Json | null
           education: Json | null
           experience: Json | null
           id: string
           is_active: boolean | null
           personal_details: Json | null
           projects: Json | null
+          selected_template_id: string | null
           skills: Json | null
           template_id: string | null
           title: string
@@ -50,12 +85,14 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          custom_template_data?: Json | null
           education?: Json | null
           experience?: Json | null
           id?: string
           is_active?: boolean | null
           personal_details?: Json | null
           projects?: Json | null
+          selected_template_id?: string | null
           skills?: Json | null
           template_id?: string | null
           title?: string
@@ -64,19 +101,29 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          custom_template_data?: Json | null
           education?: Json | null
           experience?: Json | null
           id?: string
           is_active?: boolean | null
           personal_details?: Json | null
           projects?: Json | null
+          selected_template_id?: string | null
           skills?: Json | null
           template_id?: string | null
           title?: string
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "resumes_selected_template_id_fkey"
+            columns: ["selected_template_id"]
+            isOneToOne: false
+            referencedRelation: "resume_templates"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

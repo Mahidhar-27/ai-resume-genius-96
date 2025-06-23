@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,10 +8,11 @@ import ExperienceForm from '@/components/resume/ExperienceForm';
 import SkillsForm from '@/components/resume/SkillsForm';
 import ProjectsForm from '@/components/resume/ProjectsForm';
 import ResumePreview from '@/components/resume/ResumePreview';
+import TemplateSelector from '@/components/resume/TemplateSelector';
 import AuthForm from '@/components/auth/AuthForm';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import { useResume } from '@/hooks/useResume';
-import { Download, Sparkles, Save, LogOut, User, FileText, CheckCircle2 } from 'lucide-react';
+import { Download, Sparkles, Save, LogOut, User, FileText, CheckCircle2, Palette } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export interface ResumeData {
@@ -60,12 +60,19 @@ const ResumeBuilder = () => {
   const { currentResume, isLoading, isSaving, saveResume, convertToResumeData } = useResume();
   const [resumeData, setResumeData] = useState<ResumeData>(convertToResumeData(null));
   const [activeTab, setActiveTab] = useState('personal');
+  const [selectedTemplate, setSelectedTemplate] = useState<{ id: string; data: any } | null>(null);
   const { toast } = useToast();
 
   // Update resume data when current resume changes
   useEffect(() => {
     if (currentResume) {
       setResumeData(convertToResumeData(currentResume));
+      if (currentResume.selected_template_id) {
+        setSelectedTemplate({
+          id: currentResume.selected_template_id,
+          data: currentResume.custom_template_data
+        });
+      }
     }
   }, [currentResume, convertToResumeData]);
 
@@ -74,6 +81,14 @@ const ResumeBuilder = () => {
       ...prev,
       [section]: data
     }));
+  };
+
+  const handleTemplateSelect = (templateId: string, templateData: any) => {
+    setSelectedTemplate({ id: templateId, data: templateData });
+    toast({
+      title: "Template selected",
+      description: "Your resume template has been updated."
+    });
   };
 
   const handleSave = async () => {
@@ -90,16 +105,90 @@ const ResumeBuilder = () => {
   };
 
   const handleExport = () => {
+    // Create a simple PDF export using browser print
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Resume - ${resumeData.personalDetails.fullName}</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+            .header { background: ${selectedTemplate?.data?.colors?.primary || '#2563eb'}; color: white; padding: 20px; }
+            .section { margin: 20px 0; }
+            .section h2 { color: ${selectedTemplate?.data?.colors?.primary || '#2563eb'}; border-bottom: 1px solid #ccc; }
+            @media print { body { margin: 0; } }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>${resumeData.personalDetails.fullName || 'Your Name'}</h1>
+            <p>${resumeData.personalDetails.email} | ${resumeData.personalDetails.phone} | ${resumeData.personalDetails.location}</p>
+          </div>
+          ${resumeData.personalDetails.summary ? `
+            <div class="section">
+              <h2>Professional Summary</h2>
+              <p>${resumeData.personalDetails.summary}</p>
+            </div>
+          ` : ''}
+          ${resumeData.experience.length > 0 ? `
+            <div class="section">
+              <h2>Experience</h2>
+              ${resumeData.experience.map(exp => `
+                <div style="margin-bottom: 15px;">
+                  <h3>${exp.title} - ${exp.company}</h3>
+                  <p><em>${exp.duration} | ${exp.location}</em></p>
+                  <p>${exp.description}</p>
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
+          ${resumeData.education.length > 0 ? `
+            <div class="section">
+              <h2>Education</h2>
+              ${resumeData.education.map(edu => `
+                <p><strong>${edu.degree}</strong> - ${edu.institution} (${edu.year})</p>
+              `).join('')}
+            </div>
+          ` : ''}
+          ${resumeData.skills.technical.length > 0 ? `
+            <div class="section">
+              <h2>Skills</h2>
+              <p><strong>Technical:</strong> ${resumeData.skills.technical.join(', ')}</p>
+              ${resumeData.skills.frameworks.length > 0 ? `<p><strong>Frameworks:</strong> ${resumeData.skills.frameworks.join(', ')}</p>` : ''}
+              ${resumeData.skills.languages.length > 0 ? `<p><strong>Languages:</strong> ${resumeData.skills.languages.join(', ')}</p>` : ''}
+              ${resumeData.skills.tools.length > 0 ? `<p><strong>Tools:</strong> ${resumeData.skills.tools.join(', ')}</p>` : ''}
+            </div>
+          ` : ''}
+        </body>
+        </html>
+      `);
+      printWindow.document.close();
+      printWindow.print();
+    }
+    
     toast({
-      title: "Export feature coming soon",
-      description: "PDF export functionality will be available in the next update."
+      title: "Export initiated",
+      description: "Your resume is being prepared for download. Use your browser's print dialog to save as PDF."
     });
   };
 
   const handleAISuggestions = () => {
+    // Simulate AI suggestions
+    const suggestions = [
+      "Consider adding quantifiable achievements to your experience descriptions",
+      "Your summary could benefit from highlighting your top 3 skills",
+      "Add more technical skills relevant to your target role",
+      "Include links to your portfolio projects"
+    ];
+    
+    const randomSuggestion = suggestions[Math.floor(Math.random() * suggestions.length)];
+    
     toast({
-      title: "AI Enhancement coming soon",
-      description: "AI-powered resume suggestions will be available in the next update."
+      title: "AI Suggestion",
+      description: randomSuggestion,
+      duration: 5000
     });
   };
 
@@ -123,6 +212,7 @@ const ResumeBuilder = () => {
       case 'experience': return <CheckCircle2 className="w-4 h-4" />;
       case 'projects': return <Sparkles className="w-4 h-4" />;
       case 'skills': return <FileText className="w-4 h-4" />;
+      case 'templates': return <Palette className="w-4 h-4" />;
       default: return null;
     }
   };
@@ -190,7 +280,7 @@ const ResumeBuilder = () => {
           <div className="space-y-6">
             <Card className="p-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-5 mb-6 bg-gray-100 p-1 rounded-lg">
+                <TabsList className="grid w-full grid-cols-6 mb-6 bg-gray-100 p-1 rounded-lg">
                   <TabsTrigger value="personal" className="flex items-center gap-2 text-xs font-medium data-[state=active]:bg-white data-[state=active]:shadow-sm">
                     {getTabIcon('personal')}
                     Personal
@@ -210,6 +300,10 @@ const ResumeBuilder = () => {
                   <TabsTrigger value="skills" className="flex items-center gap-2 text-xs font-medium data-[state=active]:bg-white data-[state=active]:shadow-sm">
                     {getTabIcon('skills')}
                     Skills
+                  </TabsTrigger>
+                  <TabsTrigger value="templates" className="flex items-center gap-2 text-xs font-medium data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                    {getTabIcon('templates')}
+                    Templates
                   </TabsTrigger>
                 </TabsList>
 
@@ -292,6 +386,13 @@ const ResumeBuilder = () => {
                     onChange={(data) => updateResumeData('skills', data)}
                   />
                 </TabsContent>
+
+                <TabsContent value="templates" className="space-y-4">
+                  <TemplateSelector
+                    selectedTemplateId={selectedTemplate?.id || null}
+                    onTemplateSelect={handleTemplateSelect}
+                  />
+                </TabsContent>
               </Tabs>
             </Card>
 
@@ -327,11 +428,11 @@ const ResumeBuilder = () => {
                   <p className="text-sm text-gray-600">Your resume updates in real-time</p>
                 </div>
                 <div className="px-3 py-1 bg-blue-100 text-blue-700 text-sm font-medium rounded-full">
-                  Professional Template
+                  {selectedTemplate?.id ? 'Custom Template' : 'Default Template'}
                 </div>
               </div>
               <div className="bg-white rounded-lg border-2 border-gray-100 overflow-hidden">
-                <ResumePreview data={resumeData} />
+                <ResumePreview data={resumeData} templateData={selectedTemplate?.data} />
               </div>
             </Card>
           </div>

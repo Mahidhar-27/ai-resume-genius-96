@@ -1,171 +1,311 @@
 
 import React from 'react';
-import { ResumeData } from '@/pages/Index';
+import type { ResumeData } from '@/pages/Index';
 
 interface ResumePreviewProps {
   data: ResumeData;
+  templateData?: any;
 }
 
-const ResumePreview: React.FC<ResumePreviewProps> = ({ data }) => {
-  const { personalDetails, education, experience, projects, skills } = data;
+const ResumePreview: React.FC<ResumePreviewProps> = ({ data, templateData }) => {
+  const colors = templateData?.colors || { primary: '#2563eb', secondary: '#64748b' };
+  const layout = templateData?.layout || 'modern';
 
-  return (
-    <div className="bg-white shadow-lg rounded-lg overflow-hidden">
-      <div className="p-8 space-y-6 text-sm">
-        {/* Header */}
-        <div className="text-center border-b-2 border-blue-600 pb-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            {personalDetails.fullName || 'Your Full Name'}
-          </h1>
-          <div className="flex flex-wrap justify-center gap-4 text-gray-600">
-            {personalDetails.email && <span>{personalDetails.email}</span>}
-            {personalDetails.phone && <span>{personalDetails.phone}</span>}
-            {personalDetails.location && <span>{personalDetails.location}</span>}
-          </div>
-          {(personalDetails.linkedin || personalDetails.portfolio) && (
-            <div className="flex flex-wrap justify-center gap-4 mt-2 text-blue-600">
-              {personalDetails.linkedin && <span>{personalDetails.linkedin}</span>}
-              {personalDetails.portfolio && <span>{personalDetails.portfolio}</span>}
-            </div>
-          )}
+  const renderModernLayout = () => (
+    <div className="bg-white text-gray-800 font-sans leading-relaxed">
+      {/* Header */}
+      <div 
+        className="text-white p-6"
+        style={{ backgroundColor: colors.primary }}
+      >
+        <h1 className="text-3xl font-bold mb-2">{data.personalDetails.fullName || 'Your Name'}</h1>
+        <div className="text-sm opacity-90 space-y-1">
+          {data.personalDetails.email && <div>{data.personalDetails.email}</div>}
+          {data.personalDetails.phone && <div>{data.personalDetails.phone}</div>}
+          {data.personalDetails.location && <div>{data.personalDetails.location}</div>}
+          {data.personalDetails.linkedin && <div>{data.personalDetails.linkedin}</div>}
         </div>
+      </div>
 
-        {/* Professional Summary */}
-        {personalDetails.summary && (
-          <div>
-            <h2 className="text-lg font-bold text-gray-900 mb-3 border-b border-gray-300 pb-1">
-              PROFESSIONAL SUMMARY
+      <div className="p-6 space-y-6">
+        {/* Summary */}
+        {data.personalDetails.summary && (
+          <section>
+            <h2 className="text-xl font-bold mb-3" style={{ color: colors.primary }}>
+              Professional Summary
             </h2>
-            <p className="text-gray-700 leading-relaxed">{personalDetails.summary}</p>
-          </div>
-        )}
-
-        {/* Education */}
-        {education.length > 0 && (
-          <div>
-            <h2 className="text-lg font-bold text-gray-900 mb-3 border-b border-gray-300 pb-1">
-              EDUCATION
-            </h2>
-            <div className="space-y-3">
-              {education.map((edu) => (
-                <div key={edu.id}>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="font-semibold text-gray-900">{edu.degree}</h3>
-                      <p className="text-gray-700">{edu.institution}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-gray-600">{edu.year}</p>
-                      {edu.gpa && <p className="text-gray-600">GPA: {edu.gpa}</p>}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+            <p className="text-gray-700 leading-relaxed">{data.personalDetails.summary}</p>
+          </section>
         )}
 
         {/* Experience */}
-        {experience.length > 0 && (
-          <div>
-            <h2 className="text-lg font-bold text-gray-900 mb-3 border-b border-gray-300 pb-1">
-              WORK EXPERIENCE
+        {data.experience.length > 0 && (
+          <section>
+            <h2 className="text-xl font-bold mb-3" style={{ color: colors.primary }}>
+              Experience
             </h2>
             <div className="space-y-4">
-              {experience.map((exp) => (
+              {data.experience.map((exp) => (
                 <div key={exp.id}>
-                  <div className="flex justify-between items-start mb-2">
+                  <div className="flex justify-between items-start mb-1">
                     <div>
-                      <h3 className="font-semibold text-gray-900">{exp.title}</h3>
-                      <p className="text-gray-700">{exp.company}{exp.location && `, ${exp.location}`}</p>
+                      <h3 className="font-semibold text-lg">{exp.title}</h3>
+                      <p className="text-gray-600">{exp.company}</p>
                     </div>
-                    <p className="text-gray-600">{exp.duration}</p>
+                    <div className="text-right text-sm text-gray-500">
+                      <div>{exp.duration}</div>
+                      {exp.location && <div>{exp.location}</div>}
+                    </div>
                   </div>
-                  {exp.description && (
-                    <div className="text-gray-700 leading-relaxed whitespace-pre-line ml-4">
-                      {exp.description}
-                    </div>
-                  )}
+                  <p className="text-gray-700 mt-2">{exp.description}</p>
                 </div>
               ))}
             </div>
-          </div>
+          </section>
+        )}
+
+        {/* Education */}
+        {data.education.length > 0 && (
+          <section>
+            <h2 className="text-xl font-bold mb-3" style={{ color: colors.primary }}>
+              Education
+            </h2>
+            <div className="space-y-3">
+              {data.education.map((edu) => (
+                <div key={edu.id} className="flex justify-between items-start">
+                  <div>
+                    <h3 className="font-semibold">{edu.degree}</h3>
+                    <p className="text-gray-600">{edu.institution}</p>
+                  </div>
+                  <div className="text-right text-sm text-gray-500">
+                    <div>{edu.year}</div>
+                    {edu.gpa && <div>GPA: {edu.gpa}</div>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
         )}
 
         {/* Projects */}
-        {projects.length > 0 && (
-          <div>
-            <h2 className="text-lg font-bold text-gray-900 mb-3 border-b border-gray-300 pb-1">
-              PROJECTS
+        {data.projects.length > 0 && (
+          <section>
+            <h2 className="text-xl font-bold mb-3" style={{ color: colors.primary }}>
+              Projects
             </h2>
             <div className="space-y-4">
-              {projects.map((project) => (
+              {data.projects.map((project) => (
                 <div key={project.id}>
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-semibold text-gray-900">{project.name}</h3>
+                  <div className="flex justify-between items-start mb-1">
+                    <h3 className="font-semibold">{project.name}</h3>
                     {project.link && (
-                      <span className="text-blue-600 text-xs">{project.link}</span>
+                      <a href={project.link} className="text-sm text-blue-600 hover:underline">
+                        View Project
+                      </a>
                     )}
                   </div>
-                  {project.technologies && (
-                    <p className="text-gray-600 mb-2">
-                      <span className="font-medium">Technologies:</span> {project.technologies}
-                    </p>
-                  )}
-                  {project.description && (
-                    <div className="text-gray-700 leading-relaxed whitespace-pre-line ml-4">
-                      {project.description}
-                    </div>
-                  )}
+                  <p className="text-gray-700 mb-1">{project.description}</p>
+                  <p className="text-sm text-gray-500">Technologies: {project.technologies}</p>
                 </div>
               ))}
             </div>
-          </div>
+          </section>
         )}
 
         {/* Skills */}
-        {(skills.technical.length > 0 || skills.languages.length > 0 || skills.frameworks.length > 0 || skills.tools.length > 0) && (
-          <div>
-            <h2 className="text-lg font-bold text-gray-900 mb-3 border-b border-gray-300 pb-1">
-              TECHNICAL SKILLS
+        {(data.skills.technical.length > 0 || data.skills.languages.length > 0 || 
+          data.skills.frameworks.length > 0 || data.skills.tools.length > 0) && (
+          <section>
+            <h2 className="text-xl font-bold mb-3" style={{ color: colors.primary }}>
+              Skills
             </h2>
-            <div className="space-y-2">
-              {skills.technical.length > 0 && (
-                <p>
-                  <span className="font-medium text-gray-900">Technical Skills:</span>{' '}
-                  <span className="text-gray-700">{skills.technical.join(', ')}</span>
-                </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {data.skills.technical.length > 0 && (
+                <div>
+                  <h3 className="font-semibold mb-2">Technical Skills</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {data.skills.technical.map((skill, index) => (
+                      <span 
+                        key={index}
+                        className="px-2 py-1 text-xs rounded-full text-white"
+                        style={{ backgroundColor: colors.secondary }}
+                      >
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
               )}
-              {skills.languages.length > 0 && (
-                <p>
-                  <span className="font-medium text-gray-900">Programming Languages:</span>{' '}
-                  <span className="text-gray-700">{skills.languages.join(', ')}</span>
-                </p>
+              {data.skills.frameworks.length > 0 && (
+                <div>
+                  <h3 className="font-semibold mb-2">Frameworks</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {data.skills.frameworks.map((skill, index) => (
+                      <span 
+                        key={index}
+                        className="px-2 py-1 text-xs rounded-full text-white"
+                        style={{ backgroundColor: colors.secondary }}
+                      >
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
               )}
-              {skills.frameworks.length > 0 && (
-                <p>
-                  <span className="font-medium text-gray-900">Frameworks & Libraries:</span>{' '}
-                  <span className="text-gray-700">{skills.frameworks.join(', ')}</span>
-                </p>
+              {data.skills.languages.length > 0 && (
+                <div>
+                  <h3 className="font-semibold mb-2">Languages</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {data.skills.languages.map((skill, index) => (
+                      <span 
+                        key={index}
+                        className="px-2 py-1 text-xs rounded-full text-white"
+                        style={{ backgroundColor: colors.secondary }}
+                      >
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
               )}
-              {skills.tools.length > 0 && (
-                <p>
-                  <span className="font-medium text-gray-900">Tools & Technologies:</span>{' '}
-                  <span className="text-gray-700">{skills.tools.join(', ')}</span>
-                </p>
+              {data.skills.tools.length > 0 && (
+                <div>
+                  <h3 className="font-semibold mb-2">Tools</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {data.skills.tools.map((skill, index) => (
+                      <span 
+                        key={index}
+                        className="px-2 py-1 text-xs rounded-full text-white"
+                        style={{ backgroundColor: colors.secondary }}
+                      >
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
               )}
             </div>
-          </div>
-        )}
-
-        {/* Empty State */}
-        {!personalDetails.fullName && !personalDetails.email && (
-          <div className="text-center py-12 text-gray-500">
-            <p className="text-lg mb-2">Your resume preview will appear here</p>
-            <p className="text-sm">Start by filling out your personal details in the form</p>
-          </div>
+          </section>
         )}
       </div>
+    </div>
+  );
+
+  const renderClassicLayout = () => (
+    <div className="bg-white text-gray-800 font-serif leading-relaxed p-8">
+      {/* Header */}
+      <div className="text-center border-b-2 pb-4 mb-6" style={{ borderColor: colors.primary }}>
+        <h1 className="text-4xl font-bold mb-2" style={{ color: colors.primary }}>
+          {data.personalDetails.fullName || 'Your Name'}
+        </h1>
+        <div className="text-sm text-gray-600 space-x-4">
+          {data.personalDetails.email && <span>{data.personalDetails.email}</span>}
+          {data.personalDetails.phone && <span>•</span>}
+          {data.personalDetails.phone && <span>{data.personalDetails.phone}</span>}
+          {data.personalDetails.location && <span>•</span>}
+          {data.personalDetails.location && <span>{data.personalDetails.location}</span>}
+        </div>
+      </div>
+
+      <div className="space-y-6">
+        {/* Summary */}
+        {data.personalDetails.summary && (
+          <section>
+            <h2 className="text-lg font-bold mb-3 uppercase tracking-wide" style={{ color: colors.primary }}>
+              Professional Summary
+            </h2>
+            <p className="text-gray-700">{data.personalDetails.summary}</p>
+          </section>
+        )}
+
+        {/* Experience */}
+        {data.experience.length > 0 && (
+          <section>
+            <h2 className="text-lg font-bold mb-3 uppercase tracking-wide" style={{ color: colors.primary }}>
+              Professional Experience
+            </h2>
+            <div className="space-y-4">
+              {data.experience.map((exp) => (
+                <div key={exp.id}>
+                  <div className="flex justify-between mb-1">
+                    <h3 className="font-bold">{exp.title} - {exp.company}</h3>
+                    <span className="text-gray-600">{exp.duration}</span>
+                  </div>
+                  {exp.location && <p className="text-gray-600 text-sm mb-2">{exp.location}</p>}
+                  <p className="text-gray-700">{exp.description}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Education */}
+        {data.education.length > 0 && (
+          <section>
+            <h2 className="text-lg font-bold mb-3 uppercase tracking-wide" style={{ color: colors.primary }}>
+              Education
+            </h2>
+            <div className="space-y-2">
+              {data.education.map((edu) => (
+                <div key={edu.id} className="flex justify-between">
+                  <div>
+                    <span className="font-semibold">{edu.degree}</span>
+                    <span className="text-gray-600"> - {edu.institution}</span>
+                  </div>
+                  <span className="text-gray-600">{edu.year}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Skills */}
+        {(data.skills.technical.length > 0 || data.skills.languages.length > 0) && (
+          <section>
+            <h2 className="text-lg font-bold mb-3 uppercase tracking-wide" style={{ color: colors.primary }}>
+              Skills
+            </h2>
+            <div className="text-gray-700">
+              {data.skills.technical.length > 0 && (
+                <p><strong>Technical:</strong> {data.skills.technical.join(', ')}</p>
+              )}
+              {data.skills.frameworks.length > 0 && (
+                <p><strong>Frameworks:</strong> {data.skills.frameworks.join(', ')}</p>
+              )}
+              {data.skills.languages.length > 0 && (
+                <p><strong>Languages:</strong> {data.skills.languages.join(', ')}</p>
+              )}
+              {data.skills.tools.length > 0 && (
+                <p><strong>Tools:</strong> {data.skills.tools.join(', ')}</p>
+              )}
+            </div>
+          </section>
+        )}
+
+        {/* Projects */}
+        {data.projects.length > 0 && (
+          <section>
+            <h2 className="text-lg font-bold mb-3 uppercase tracking-wide" style={{ color: colors.primary }}>
+              Projects
+            </h2>
+            <div className="space-y-3">
+              {data.projects.map((project) => (
+                <div key={project.id}>
+                  <h3 className="font-semibold">{project.name}</h3>
+                  <p className="text-gray-700">{project.description}</p>
+                  <p className="text-sm text-gray-600">Technologies: {project.technologies}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="w-full max-w-4xl mx-auto bg-white shadow-lg" style={{ aspectRatio: '8.5/11' }}>
+      {layout === 'classic' ? renderClassicLayout() : renderModernLayout()}
     </div>
   );
 };

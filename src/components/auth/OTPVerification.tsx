@@ -1,11 +1,12 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Card } from '@/components/ui/card';
+import { ArrowLeft, Mail, Shield } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Mail } from 'lucide-react';
 
 interface OTPVerificationProps {
   email: string;
@@ -13,29 +14,23 @@ interface OTPVerificationProps {
   onBack: () => void;
 }
 
-const OTPVerification: React.FC<OTPVerificationProps> = ({ 
-  email, 
-  onVerificationSuccess, 
-  onBack 
+const OTPVerification: React.FC<OTPVerificationProps> = ({
+  email,
+  onVerificationSuccess,
+  onBack
 }) => {
   const [otp, setOtp] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
   const [isResending, setIsResending] = useState(false);
-  const [countdown, setCountdown] = useState(60);
   const { toast } = useToast();
 
-  useEffect(() => {
-    if (countdown > 0) {
-      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [countdown]);
-
-  const handleVerifyOTP = async () => {
+  const handleVerifyOTP = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
     if (otp.length !== 6) {
       toast({
         title: "Invalid OTP",
-        description: "Please enter a 6-digit verification code.",
+        description: "Please enter a valid 6-digit verification code.",
         variant: "destructive"
       });
       return;
@@ -44,29 +39,31 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
     setIsVerifying(true);
 
     try {
-      const { data, error } = await supabase.auth.verifyOtp({
+      const { error } = await supabase.auth.verifyOtp({
         email,
         token: otp,
         type: 'email'
       });
 
       if (error) {
+        console.error('OTP verification error:', error);
         toast({
           title: "Verification failed",
-          description: error.message,
+          description: error.message || "Invalid verification code. Please try again.",
           variant: "destructive"
         });
-      } else if (data.user) {
+      } else {
         toast({
-          title: "Email verified successfully!",
-          description: "Welcome to Smart Resume Builder!"
+          title: "Email verified!",
+          description: "Your account has been successfully verified."
         });
         onVerificationSuccess();
       }
     } catch (error) {
+      console.error('OTP verification exception:', error);
       toast({
         title: "Verification error",
-        description: "An error occurred during verification.",
+        description: "An error occurred during verification. Please try again.",
         variant: "destructive"
       });
     } finally {
@@ -78,30 +75,29 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
     setIsResending(true);
 
     try {
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          emailRedirectTo: `${window.location.origin}/`
-        }
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email
       });
 
       if (error) {
+        console.error('Resend OTP error:', error);
         toast({
-          title: "Failed to resend code",
+          title: "Resend failed",
           description: error.message,
           variant: "destructive"
         });
       } else {
         toast({
-          title: "Verification code sent",
-          description: "A new code has been sent to your email."
+          title: "Verification code resent",
+          description: "A new verification code has been sent to your email."
         });
-        setCountdown(60);
       }
     } catch (error) {
+      console.error('Resend OTP exception:', error);
       toast({
-        title: "Error",
-        description: "Failed to resend verification code.",
+        title: "Resend error",
+        description: "Failed to resend verification code. Please try again.",
         variant: "destructive"
       });
     } finally {
@@ -111,84 +107,68 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
 
   return (
     <div className="space-y-6">
-      <div className="text-center">
-        <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Mail className="w-6 h-6 text-blue-600" />
+      <div className="text-center space-y-4">
+        <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto">
+          <Shield className="w-8 h-8 text-blue-600" />
         </div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Check your email</h2>
-        <p className="text-gray-600">
-          We've sent a 6-digit verification code to<br />
-          <span className="font-medium text-gray-900">{email}</span>
-        </p>
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">Verify Your Email</h2>
+          <p className="text-gray-600 mt-2">
+            We've sent a 6-digit verification code to
+          </p>
+          <p className="font-medium text-gray-900">{email}</p>
+        </div>
       </div>
 
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <Label className="text-sm font-medium text-gray-700">Verification Code</Label>
-          <div className="flex justify-center">
-            <InputOTP
-              maxLength={6}
+      <Card className="p-6 space-y-6">
+        <form onSubmit={handleVerifyOTP} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="otp">Verification Code</Label>
+            <Input
+              id="otp"
+              type="text"
+              placeholder="Enter 6-digit code"
               value={otp}
-              onChange={(value) => setOtp(value)}
-            >
-              <InputOTPGroup>
-                <InputOTPSlot index={0} />
-                <InputOTPSlot index={1} />
-                <InputOTPSlot index={2} />
-                <InputOTPSlot index={3} />
-                <InputOTPSlot index={4} />
-                <InputOTPSlot index={5} />
-              </InputOTPGroup>
-            </InputOTP>
+              onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+              className="text-center text-2xl tracking-widest"
+              maxLength={6}
+              required
+            />
           </div>
-        </div>
 
-        <Button 
-          onClick={handleVerifyOTP}
-          disabled={isVerifying || otp.length !== 6}
-          className="w-full h-12 bg-blue-600 hover:bg-blue-700"
-        >
-          {isVerifying ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Verifying...
-            </>
-          ) : (
-            'Verify Code'
-          )}
-        </Button>
+          <Button 
+            type="submit" 
+            className="w-full"
+            disabled={isVerifying || otp.length !== 6}
+          >
+            {isVerifying ? 'Verifying...' : 'Verify Email'}
+          </Button>
+        </form>
 
-        <div className="text-center space-y-2">
+        <div className="text-center space-y-4">
           <p className="text-sm text-gray-600">
             Didn't receive the code?
           </p>
           <Button
-            variant="ghost"
+            variant="outline"
             onClick={handleResendOTP}
-            disabled={isResending || countdown > 0}
-            className="text-blue-600 hover:text-blue-700"
+            disabled={isResending}
+            className="w-full"
           >
-            {isResending ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Resending...
-              </>
-            ) : countdown > 0 ? (
-              `Resend in ${countdown}s`
-            ) : (
-              'Resend Code'
-            )}
+            <Mail className="w-4 h-4 mr-2" />
+            {isResending ? 'Resending...' : 'Resend verification code'}
           </Button>
         </div>
 
         <Button
-          variant="outline"
+          variant="ghost"
           onClick={onBack}
-          className="w-full"
+          className="w-full mt-4"
         >
+          <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Sign Up
         </Button>
-      </div>
+      </Card>
     </div>
   );
 };
