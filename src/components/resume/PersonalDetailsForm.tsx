@@ -25,7 +25,7 @@ const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({ data, onChang
   const { toast } = useToast();
 
   const updateField = (field: keyof PersonalDetails, value: string) => {
-    console.log(`Updating ${field}:`, value); // Debug log
+    console.log(`Updating ${field}:`, value);
     
     let sanitizedValue = value;
     let isValid = true;
@@ -83,7 +83,7 @@ const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({ data, onChang
         ...data,
         [field]: sanitizedValue
       };
-      console.log('Updated data:', updatedData); // Debug log
+      console.log('Updated personal details:', updatedData);
       onChange(updatedData);
     }
   };

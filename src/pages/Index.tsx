@@ -58,7 +58,26 @@ export interface ResumeData {
 const ResumeBuilder = () => {
   const { user, signOut } = useAuth();
   const { currentResume, isLoading, isSaving, saveResume, convertToResumeData } = useResume();
-  const [resumeData, setResumeData] = useState<ResumeData>(convertToResumeData(null));
+  const [resumeData, setResumeData] = useState<ResumeData>({
+    personalDetails: {
+      fullName: '',
+      email: '',
+      phone: '',
+      location: '',
+      linkedin: '',
+      portfolio: '',
+      summary: ''
+    },
+    education: [],
+    experience: [],
+    projects: [],
+    skills: {
+      technical: [],
+      languages: [],
+      frameworks: [],
+      tools: []
+    }
+  });
   const [activeTab, setActiveTab] = useState('personal');
   const [selectedTemplate, setSelectedTemplate] = useState<{ id: string; data: any } | null>(null);
   const { toast } = useToast();
@@ -66,7 +85,9 @@ const ResumeBuilder = () => {
   // Update resume data when current resume changes
   useEffect(() => {
     if (currentResume) {
-      setResumeData(convertToResumeData(currentResume));
+      const convertedData = convertToResumeData(currentResume);
+      console.log('Converting resume data:', convertedData);
+      setResumeData(convertedData);
       if (currentResume.selected_template_id) {
         setSelectedTemplate({
           id: currentResume.selected_template_id,
@@ -77,10 +98,15 @@ const ResumeBuilder = () => {
   }, [currentResume, convertToResumeData]);
 
   const updateResumeData = (section: keyof ResumeData, data: any) => {
-    setResumeData(prev => ({
-      ...prev,
-      [section]: data
-    }));
+    console.log(`Updating ${section} with:`, data);
+    setResumeData(prev => {
+      const updated = {
+        ...prev,
+        [section]: data
+      };
+      console.log('Updated resume data:', updated);
+      return updated;
+    });
   };
 
   const handleTemplateSelect = (templateId: string, templateData: any) => {
@@ -93,6 +119,7 @@ const ResumeBuilder = () => {
 
   const handleSave = async () => {
     try {
+      console.log('Saving resume data:', resumeData);
       await saveResume(resumeData);
     } catch (error) {
       console.error('Save error:', error);
@@ -105,7 +132,6 @@ const ResumeBuilder = () => {
   };
 
   const handleExport = () => {
-    // Create a simple PDF export using browser print
     const printWindow = window.open('', '_blank');
     if (printWindow) {
       printWindow.document.write(`
@@ -175,7 +201,6 @@ const ResumeBuilder = () => {
   };
 
   const handleAISuggestions = () => {
-    // Simulate AI suggestions
     const suggestions = [
       "Consider adding quantifiable achievements to your experience descriptions",
       "Your summary could benefit from highlighting your top 3 skills",

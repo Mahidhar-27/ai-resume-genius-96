@@ -84,9 +84,10 @@ export const useAuthForm = (onAuthSuccess: () => void) => {
     }
     
     setIsLoading(true);
+    console.log('Starting signup process with email:', formData.email);
 
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
@@ -97,6 +98,8 @@ export const useAuthForm = (onAuthSuccess: () => void) => {
         }
       });
 
+      console.log('Signup response:', { data, error });
+
       if (error) {
         console.error('Signup error:', error);
         toast({
@@ -105,11 +108,12 @@ export const useAuthForm = (onAuthSuccess: () => void) => {
           variant: "destructive"
         });
       } else {
+        console.log('Signup successful, user needs email confirmation');
         setPendingEmail(formData.email);
         setShowOTPVerification(true);
         toast({
-          title: "Verification email sent",
-          description: "Please check your email and enter the verification code."
+          title: "Check your email",
+          description: "We've sent you a verification code. Please check your email and enter the code below."
         });
       }
     } catch (error) {
@@ -132,12 +136,15 @@ export const useAuthForm = (onAuthSuccess: () => void) => {
     }
     
     setIsLoading(true);
+    console.log('Starting signin process with email:', formData.email);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email: formData.email,
         password: formData.password
       });
+
+      console.log('Signin response:', { data, error });
 
       if (error) {
         console.error('Signin error:', error);
@@ -147,6 +154,7 @@ export const useAuthForm = (onAuthSuccess: () => void) => {
           variant: "destructive"
         });
       } else {
+        console.log('Signin successful');
         toast({
           title: "Welcome back!",
           description: "Successfully signed in to your account."
@@ -166,11 +174,17 @@ export const useAuthForm = (onAuthSuccess: () => void) => {
   };
 
   const handleOTPVerificationSuccess = () => {
+    console.log('OTP verification successful, proceeding to app');
     setShowOTPVerification(false);
+    toast({
+      title: "Account verified!",
+      description: "Welcome to Smart Resume Builder."
+    });
     onAuthSuccess();
   };
 
   const handleBackToSignUp = () => {
+    console.log('Going back to signup form');
     setShowOTPVerification(false);
     setPendingEmail('');
   };

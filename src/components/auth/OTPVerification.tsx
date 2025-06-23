@@ -37,24 +37,40 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
     }
 
     setIsVerifying(true);
-    console.log('Verifying OTP for email:', email, 'OTP:', otp); // Debug log
+    console.log('Verifying OTP for email:', email, 'OTP:', otp);
 
     try {
-      const { error } = await supabase.auth.verifyOtp({
+      const { data, error } = await supabase.auth.verifyOtp({
         email,
         token: otp,
         type: 'email'
       });
 
+      console.log('OTP verification response:', { data, error });
+
       if (error) {
         console.error('OTP verification error:', error);
-        toast({
-          title: "Verification failed",
-          description: error.message || "Invalid verification code. Please try again.",
-          variant: "destructive"
-        });
+        if (error.message.includes('expired')) {
+          toast({
+            title: "Code expired",
+            description: "Your verification code has expired. Please request a new one.",
+            variant: "destructive"
+          });
+        } else if (error.message.includes('invalid')) {
+          toast({
+            title: "Invalid code",
+            description: "The verification code you entered is incorrect. Please try again.",
+            variant: "destructive"
+          });
+        } else {
+          toast({
+            title: "Verification failed",
+            description: error.message || "Invalid verification code. Please try again.",
+            variant: "destructive"
+          });
+        }
       } else {
-        console.log('OTP verification successful'); // Debug log
+        console.log('OTP verification successful');
         toast({
           title: "Email verified!",
           description: "Your account has been successfully verified."
@@ -75,13 +91,18 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
 
   const handleResendOTP = async () => {
     setIsResending(true);
-    console.log('Resending OTP for email:', email); // Debug log
+    console.log('Resending OTP for email:', email);
 
     try {
       const { error } = await supabase.auth.resend({
         type: 'signup',
-        email
+        email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`
+        }
       });
+
+      console.log('Resend OTP response:', { error });
 
       if (error) {
         console.error('Resend OTP error:', error);
@@ -91,11 +112,12 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
           variant: "destructive"
         });
       } else {
-        console.log('OTP resent successfully'); // Debug log
+        console.log('OTP resent successfully');
         toast({
           title: "Verification code resent",
           description: "A new verification code has been sent to your email."
         });
+        setOtp(''); // Clear the current OTP input
       }
     } catch (error) {
       console.error('Resend OTP exception:', error);
@@ -112,7 +134,7 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
   const handleOTPInput = (value: string) => {
     // Only allow digits and limit to 6 characters
     const sanitizedValue = value.replace(/\D/g, '').slice(0, 6);
-    console.log('OTP input value:', sanitizedValue); // Debug log
+    console.log('OTP input value:', sanitizedValue);
     setOtp(sanitizedValue);
   };
 
@@ -128,6 +150,9 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
             We've sent a 6-digit verification code to
           </p>
           <p className="font-medium text-gray-900">{email}</p>
+          <p className="text-sm text-gray-500 mt-2">
+            Check your inbox and spam folder for the verification code.
+          </p>
         </div>
       </div>
 
