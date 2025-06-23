@@ -9,6 +9,8 @@ export const useAuthForm = (onAuthSuccess: () => void) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordValidation, setPasswordValidation] = useState({ isValid: false, errors: [], strength: 0 });
+  const [showOTPVerification, setShowOTPVerification] = useState(false);
+  const [pendingEmail, setPendingEmail] = useState('');
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -20,7 +22,6 @@ export const useAuthForm = (onAuthSuccess: () => void) => {
   const handleInputChange = (field: string, value: string) => {
     let sanitizedValue = value;
     
-    // Sanitize inputs based on field type
     if (field === 'fullName') {
       sanitizedValue = sanitizeInput(value, 100);
     } else if (field === 'email') {
@@ -29,7 +30,6 @@ export const useAuthForm = (onAuthSuccess: () => void) => {
     
     setFormData(prev => ({ ...prev, [field]: sanitizedValue }));
     
-    // Real-time password validation
     if (field === 'password') {
       const validation = validatePassword(value);
       setPasswordValidation(validation);
@@ -37,7 +37,6 @@ export const useAuthForm = (onAuthSuccess: () => void) => {
   };
 
   const validateForm = (isSignUp: boolean) => {
-    // Email validation
     if (!validateEmail(formData.email)) {
       toast({
         title: "Invalid email",
@@ -47,7 +46,6 @@ export const useAuthForm = (onAuthSuccess: () => void) => {
       return false;
     }
 
-    // Password validation
     if (isSignUp && !passwordValidation.isValid) {
       toast({
         title: "Password requirements not met",
@@ -57,7 +55,6 @@ export const useAuthForm = (onAuthSuccess: () => void) => {
       return false;
     }
 
-    // Password confirmation for signup
     if (isSignUp && formData.password !== formData.confirmPassword) {
       toast({
         title: "Passwords don't match",
@@ -67,7 +64,6 @@ export const useAuthForm = (onAuthSuccess: () => void) => {
       return false;
     }
 
-    // Full name validation for signup
     if (isSignUp && formData.fullName.length < 2) {
       toast({
         title: "Name required",
@@ -90,13 +86,14 @@ export const useAuthForm = (onAuthSuccess: () => void) => {
     setIsLoading(true);
 
     try {
-      const { data, error } = await supabase.auth.signUp({
+      const { error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
           data: {
             full_name: formData.fullName
-          }
+          },
+          emailRedirectTo: `${window.location.origin}/`
         }
       });
 
@@ -104,15 +101,16 @@ export const useAuthForm = (onAuthSuccess: () => void) => {
         console.error('Signup error:', error);
         toast({
           title: "Sign up failed",
-          description: getGenericErrorMessage('auth'),
+          description: error.message,
           variant: "destructive"
         });
-      } else if (data.user) {
+      } else {
+        setPendingEmail(formData.email);
+        setShowOTPVerification(true);
         toast({
-          title: "Account created successfully!",
-          description: "Welcome to Smart Resume Builder!"
+          title: "Verification email sent",
+          description: "Please check your email and enter the verification code."
         });
-        onAuthSuccess();
       }
     } catch (error) {
       console.error('Signup exception:', error);
@@ -145,7 +143,7 @@ export const useAuthForm = (onAuthSuccess: () => void) => {
         console.error('Signin error:', error);
         toast({
           title: "Sign in failed",
-          description: getGenericErrorMessage('auth'),
+          description: error.message,
           variant: "destructive"
         });
       } else {
@@ -167,16 +165,30 @@ export const useAuthForm = (onAuthSuccess: () => void) => {
     }
   };
 
+  const handleOTPVerificationSuccess = () => {
+    setShowOTPVerification(false);
+    onAuthSuccess();
+  };
+
+  const handleBackToSignUp = () => {
+    setShowOTPVerification(false);
+    setPendingEmail('');
+  };
+
   return {
     formData,
     isLoading,
     showPassword,
     showConfirmPassword,
     passwordValidation,
+    showOTPVerification,
+    pendingEmail,
     handleInputChange,
     setShowPassword,
     setShowConfirmPassword,
     handleSignUp,
-    handleSignIn
+    handleSignIn,
+    handleOTPVerificationSuccess,
+    handleBackToSignUp
   };
 };

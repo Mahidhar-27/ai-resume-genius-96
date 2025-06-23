@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AuthFormLayout from './AuthFormLayout';
 import SignInForm from './SignInForm';
 import SignUpForm from './SignUpForm';
+import OTPVerification from './OTPVerification';
 import { useAuthForm } from './useAuthForm';
 
 interface AuthFormProps {
@@ -17,12 +18,28 @@ const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
     showPassword,
     showConfirmPassword,
     passwordValidation,
+    showOTPVerification,
+    pendingEmail,
     handleInputChange,
     setShowPassword,
     setShowConfirmPassword,
     handleSignUp,
-    handleSignIn
+    handleSignIn,
+    handleOTPVerificationSuccess,
+    handleBackToSignUp
   } = useAuthForm(onAuthSuccess);
+
+  if (showOTPVerification) {
+    return (
+      <AuthFormLayout>
+        <OTPVerification
+          email={pendingEmail}
+          onVerificationSuccess={handleOTPVerificationSuccess}
+          onBack={handleBackToSignUp}
+        />
+      </AuthFormLayout>
+    );
+  }
 
   return (
     <AuthFormLayout>
