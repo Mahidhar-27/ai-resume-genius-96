@@ -34,29 +34,20 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
 
   const loadTemplates = async () => {
     try {
-      // Use raw SQL query since the table might not be in TypeScript types yet
-      const { data, error } = await supabase
-        .rpc('get_resume_templates')
-        .then(() => ({ data: null, error: new Error('Function not found') }))
-        .catch(async () => {
-          // Fallback to direct query
-          const response = await fetch(`https://bomqynyzztbibggernde.supabase.co/rest/v1/resume_templates?select=*`, {
-            headers: {
-              'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJvbXF5bnl6enRiaWJnZ2VybmRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxNDMyNjYsImV4cCI6MjA2NTcxOTI2Nn0.oJKNn_bO5R_Wkhc3JDEQLm-C8rI0iD_V1k1BvzaeNF8',
-              'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJvbXF5bnl6enRiaWJnZ2VybmRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxNDMyNjYsImV4cCI6MjA2NTcxOTI2Nn0.oJKNn_bO5R_Wkhc3JDEQLm-C8rI0iD_V1k1BvzaeNF8',
-              'Content-Type': 'application/json'
-            }
-          });
-          
-          if (!response.ok) {
-            throw new Error('Failed to fetch templates');
-          }
-          
-          return { data: await response.json(), error: null };
-        });
-
-      if (error) throw error;
-
+      // Direct API call to resume_templates table
+      const response = await fetch(`https://bomqynyzztbibggernde.supabase.co/rest/v1/resume_templates?select=*`, {
+        headers: {
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJvbXF5bnl6enRiaWJnZ2VybmRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxNDMyNjYsImV4cCI6MjA2NTcxOTI2Nn0.oJKNn_bO5R_Wkhc3JDEQLm-C8rI0iD_V1k1BvzaeNF8',
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJvbXF5bnl6enRiaWJnZ2VybmRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxNDMyNjYsImV4cCI6MjA2NTcxOTI2Nn0.oJKNn_bO5R_Wkhc3JDEQLm-C8rI0iD_V1k1BvzaeNF8',
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch templates');
+      }
+      
+      const data = await response.json();
       setTemplates(data || []);
     } catch (error) {
       console.error('Error loading templates:', error);
