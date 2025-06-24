@@ -1,4 +1,3 @@
-
 import React from 'react';
 import type { ResumeData } from '@/pages/Index';
 
@@ -23,7 +22,8 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ data, templateData }) => 
           {data.personalDetails.email && <div>{data.personalDetails.email}</div>}
           {data.personalDetails.phone && <div>{data.personalDetails.phone}</div>}
           {data.personalDetails.location && <div>{data.personalDetails.location}</div>}
-          {data.personalDetails.linkedin && <div>{data.personalDetails.linkedin}</div>}
+          {data.personalDetails.linkedin && <div>LinkedIn: {data.personalDetails.linkedin}</div>}
+          {data.personalDetails.portfolio && <div>Portfolio: {data.personalDetails.portfolio}</div>}
         </div>
       </div>
 
@@ -57,7 +57,7 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ data, templateData }) => 
                       {exp.location && <div>{exp.location}</div>}
                     </div>
                   </div>
-                  <p className="text-gray-700 mt-2">{exp.description}</p>
+                  <p className="text-gray-700 mt-2 whitespace-pre-wrap">{exp.description}</p>
                 </div>
               ))}
             </div>
@@ -104,7 +104,7 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ data, templateData }) => 
                       </a>
                     )}
                   </div>
-                  <p className="text-gray-700 mb-1">{project.description}</p>
+                  <p className="text-gray-700 mb-1 whitespace-pre-wrap">{project.description}</p>
                   <p className="text-sm text-gray-500">Technologies: {project.technologies}</p>
                 </div>
               ))}
@@ -204,6 +204,18 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ data, templateData }) => 
           {data.personalDetails.phone && <span>{data.personalDetails.phone}</span>}
           {data.personalDetails.location && <span>•</span>}
           {data.personalDetails.location && <span>{data.personalDetails.location}</span>}
+          {data.personalDetails.linkedin && (
+            <>
+              <span>•</span>
+              <span>LinkedIn: {data.personalDetails.linkedin}</span>
+            </>
+          )}
+          {data.personalDetails.portfolio && (
+            <>
+              <span>•</span>
+              <span>Portfolio: {data.personalDetails.portfolio}</span>
+            </>
+          )}
         </div>
       </div>
 

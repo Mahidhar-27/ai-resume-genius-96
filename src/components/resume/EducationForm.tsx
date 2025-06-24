@@ -33,34 +33,47 @@ const EducationForm: React.FC<EducationFormProps> = ({ data, onChange }) => {
       gpa: ''
     };
     const updatedData = [...data, newEducation];
-    console.log('Adding education:', updatedData); // Debug log
+    console.log('Adding education:', updatedData);
     onChange(updatedData);
   };
 
   const removeEducation = (id: string) => {
     const updatedData = data.filter(edu => edu.id !== id);
-    console.log('Removing education:', updatedData); // Debug log
+    console.log('Removing education:', updatedData);
     onChange(updatedData);
   };
 
   const updateEducation = (id: string, field: keyof Education, value: string) => {
-    console.log(`Updating education ${id} field ${field}:`, value); // Debug log
+    console.log(`Updating education ${id} field ${field}:`, value);
     
+    // Allow spaces and special characters for education fields
     let sanitizedValue = value;
     let isValid = true;
 
-    // Apply field-specific validation and sanitization
+    // Apply field-specific validation without removing spaces
     switch (field) {
       case 'degree':
       case 'institution':
-        sanitizedValue = sanitizeInput(value, 200);
-        if (!validateTextLength(sanitizedValue, 200)) isValid = false;
+        // Allow spaces and special characters for education fields
+        if (value.length > 200) {
+          isValid = false;
+        } else {
+          sanitizedValue = value; // Keep original value with spaces
+        }
         break;
       case 'year':
-        sanitizedValue = sanitizeInput(value, 10);
+        if (value.length > 10) {
+          isValid = false;
+        } else {
+          sanitizedValue = value;
+        }
         break;
       case 'gpa':
-        sanitizedValue = sanitizeInput(value, 10);
+        if (value.length > 10) {
+          isValid = false;
+        } else {
+          sanitizedValue = value;
+        }
         break;
     }
 
@@ -76,7 +89,7 @@ const EducationForm: React.FC<EducationFormProps> = ({ data, onChange }) => {
     const updatedData = data.map(edu => 
       edu.id === id ? { ...edu, [field]: sanitizedValue } : edu
     );
-    console.log('Updated education data:', updatedData); // Debug log
+    console.log('Updated education data:', updatedData);
     onChange(updatedData);
   };
 

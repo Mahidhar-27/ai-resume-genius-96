@@ -12,7 +12,7 @@ import TemplateSelector from '@/components/resume/TemplateSelector';
 import AuthForm from '@/components/auth/AuthForm';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import { useResume } from '@/hooks/useResume';
-import { Download, Sparkles, Save, LogOut, User, FileText, CheckCircle2, Palette } from 'lucide-react';
+import { Download, Sparkles, Save, LogOut, User, FileText, CheckCircle2, Palette, Crown, Star } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export interface ResumeData {
@@ -54,6 +54,94 @@ export interface ResumeData {
     tools: string[];
   };
 }
+
+const LandingPage = () => {
+  const [showAuth, setShowAuth] = useState(false);
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900">
+      {/* Hero Section */}
+      <div className="relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6 py-20">
+          <div className="text-center space-y-8">
+            <div className="inline-flex items-center gap-2 bg-blue-600/20 backdrop-blur-sm text-blue-200 px-6 py-3 rounded-full border border-blue-400/30">
+              <Crown className="w-5 h-5" />
+              <span className="font-semibold">AI POWERED RESUME BUILDER</span>
+            </div>
+            
+            <h1 className="text-6xl md:text-7xl font-bold text-white leading-tight">
+              Build Your Dream
+              <span className="block bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
+                Resume Today
+              </span>
+            </h1>
+            
+            <p className="text-xl text-slate-300 max-w-3xl mx-auto leading-relaxed">
+              Create stunning, professional resumes with our AI-powered builder. Choose from beautiful templates, 
+              get smart suggestions, and land your dream job faster.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <Button 
+                onClick={() => setShowAuth(true)}
+                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-200"
+              >
+                <Sparkles className="w-5 h-5 mr-2" />
+                START BUILDING - FREE
+              </Button>
+              <p className="text-sm text-slate-400">No credit card required • 100% Free</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Features Grid */}
+        <div className="max-w-7xl mx-auto px-6 py-16">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <Card className="p-8 bg-white/10 backdrop-blur-sm border-white/20 text-white">
+              <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center mb-6">
+                <Sparkles className="w-6 h-6" />
+              </div>
+              <h3 className="text-xl font-bold mb-4">AI-Powered Suggestions</h3>
+              <p className="text-slate-300">Get intelligent recommendations to improve your resume content and increase your chances of getting hired.</p>
+            </Card>
+            
+            <Card className="p-8 bg-white/10 backdrop-blur-sm border-white/20 text-white">
+              <div className="w-12 h-12 bg-indigo-500 rounded-xl flex items-center justify-center mb-6">
+                <Palette className="w-6 h-6" />
+              </div>
+              <h3 className="text-xl font-bold mb-4">Beautiful Templates</h3>
+              <p className="text-slate-300">Choose from our collection of professionally designed templates that make your resume stand out.</p>
+            </Card>
+            
+            <Card className="p-8 bg-white/10 backdrop-blur-sm border-white/20 text-white">
+              <div className="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center mb-6">
+                <Download className="w-6 h-6" />
+              </div>
+              <h3 className="text-xl font-bold mb-4">Instant Export</h3>
+              <p className="text-slate-300">Download your resume as a PDF instantly, ready to send to employers or upload to job boards.</p>
+            </Card>
+          </div>
+        </div>
+      </div>
+
+      {/* Auth Modal */}
+      {showAuth && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-6">
+          <div className="relative max-w-md w-full">
+            <Button
+              variant="ghost"
+              onClick={() => setShowAuth(false)}
+              className="absolute -top-4 -right-4 w-8 h-8 p-0 bg-white/10 hover:bg-white/20 text-white rounded-full z-10"
+            >
+              ×
+            </Button>
+            <AuthForm onAuthSuccess={() => setShowAuth(false)} />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const ResumeBuilder = () => {
   const { user, signOut } = useAuth();
@@ -519,16 +607,14 @@ const ResumeBuilder = () => {
 };
 
 const Index = () => {
-  const [showAuth, setShowAuth] = useState(true);
-
   return (
     <AuthProvider>
-      <AuthWrapper onAuthSuccess={() => setShowAuth(false)} showAuth={showAuth} />
+      <AuthWrapper />
     </AuthProvider>
   );
 };
 
-const AuthWrapper: React.FC<{ onAuthSuccess: () => void; showAuth: boolean }> = ({ onAuthSuccess, showAuth }) => {
+const AuthWrapper: React.FC = () => {
   const { user, isLoading } = useAuth();
 
   if (isLoading) {
@@ -543,7 +629,7 @@ const AuthWrapper: React.FC<{ onAuthSuccess: () => void; showAuth: boolean }> = 
   }
 
   if (!user) {
-    return <AuthForm onAuthSuccess={onAuthSuccess} />;
+    return <LandingPage />;
   }
 
   return <ResumeBuilder />;

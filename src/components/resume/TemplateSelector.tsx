@@ -4,7 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Check, Palette, Sparkles, FileText, Briefcase, User, Star } from 'lucide-react';
+import { Check, Palette, Sparkles, FileText, Briefcase, User, Star, Crown, Diamond } from 'lucide-react';
 
 interface Template {
   id: string;
@@ -34,13 +34,12 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
 
   const loadTemplates = async () => {
     try {
-      // Extended templates collection
       const defaultTemplates = [
         {
           id: 'modern',
           name: 'Modern Professional',
           description: 'Clean and modern design perfect for tech professionals',
-          template_data: { layout: 'modern', colors: { primary: '#2563eb', secondary: '#64748b' } },
+          template_data: { layout: 'modern', colors: { primary: '#1e3a8a', secondary: '#3b82f6' } },
           is_premium: false,
           category: 'RESUME BUILDER'
         },
@@ -53,12 +52,20 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
           category: 'RESUME BUILDER'
         },
         {
+          id: 'navy-elite',
+          name: 'Navy Elite',
+          description: 'Premium navy blue design with elegant white styling',
+          template_data: { layout: 'navy-elite', colors: { primary: '#0f172a', secondary: '#1e293b' } },
+          is_premium: true,
+          category: 'PREMIUM'
+        },
+        {
           id: 'creative',
           name: 'Creative Design',
           description: 'Eye-catching design for creative professionals',
           template_data: { layout: 'creative', colors: { primary: '#7c3aed', secondary: '#a78bfa' } },
           is_premium: true,
-          category: 'RESUME BUILDER'
+          category: 'CREATIVE'
         },
         {
           id: 'minimal',
@@ -66,7 +73,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
           description: 'Simple and clean layout focusing on content',
           template_data: { layout: 'minimal', colors: { primary: '#059669', secondary: '#10b981' } },
           is_premium: false,
-          category: 'RESUME BUILDER'
+          category: 'SIMPLE'
         },
         {
           id: 'executive',
@@ -74,7 +81,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
           description: 'Professional template for senior management roles',
           template_data: { layout: 'executive', colors: { primary: '#991b1b', secondary: '#dc2626' } },
           is_premium: true,
-          category: 'RESUME BUILDER'
+          category: 'EXECUTIVE'
         },
         {
           id: 'tech',
@@ -82,7 +89,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
           description: 'Perfect for software developers and engineers',
           template_data: { layout: 'tech', colors: { primary: '#1e40af', secondary: '#3b82f6' } },
           is_premium: false,
-          category: 'RESUME BUILDER'
+          category: 'TECH'
         },
         {
           id: 'academic',
@@ -90,7 +97,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
           description: 'Ideal for researchers and academic positions',
           template_data: { layout: 'academic', colors: { primary: '#7c2d12', secondary: '#ea580c' } },
           is_premium: true,
-          category: 'RESUME BUILDER'
+          category: 'ACADEMIC'
         },
         {
           id: 'startup',
@@ -98,7 +105,31 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
           description: 'Dynamic template for startup environments',
           template_data: { layout: 'startup', colors: { primary: '#be185d', secondary: '#ec4899' } },
           is_premium: false,
-          category: 'RESUME BUILDER'
+          category: 'STARTUP'
+        },
+        {
+          id: 'luxury',
+          name: 'Luxury Gold',
+          description: 'Premium gold and black design for luxury brands',
+          template_data: { layout: 'luxury', colors: { primary: '#d97706', secondary: '#f59e0b' } },
+          is_premium: true,
+          category: 'LUXURY'
+        },
+        {
+          id: 'gradient',
+          name: 'Gradient Pro',
+          description: 'Modern gradient design with stunning visuals',
+          template_data: { layout: 'gradient', colors: { primary: '#6366f1', secondary: '#8b5cf6' } },
+          is_premium: true,
+          category: 'MODERN'
+        },
+        {
+          id: 'corporate',
+          name: 'Corporate Blue',
+          description: 'Professional corporate design in blue tones',
+          template_data: { layout: 'corporate', colors: { primary: '#1d4ed8', secondary: '#3b82f6' } },
+          is_premium: false,
+          category: 'CORPORATE'
         }
       ];
       
@@ -126,34 +157,45 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
       case 'creative': return <Palette className="w-5 h-5" />;
       case 'minimal': return <User className="w-5 h-5" />;
       case 'executive': return <Star className="w-5 h-5" />;
+      case 'navy-elite': return <Crown className="w-5 h-5" />;
+      case 'luxury': return <Diamond className="w-5 h-5" />;
       default: return <FileText className="w-5 h-5" />;
     }
   };
 
-  const getTemplatePreview = (template: Template) => {
+  const getEnhancedTemplatePreview = (template: Template) => {
     const colors = getTemplateColors(template.template_data);
     
     return (
-      <div className="w-full h-48 bg-white border rounded-lg overflow-hidden shadow-sm">
+      <div className="w-full h-56 bg-white border-2 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300">
         <div 
-          className="h-12 w-full flex items-center px-4"
-          style={{ backgroundColor: colors.primary }}
+          className="h-16 w-full flex items-center justify-between px-6"
+          style={{ 
+            background: template.id === 'navy-elite' ? 
+              'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)' : 
+              `linear-gradient(135deg, ${colors.primary} 0%, ${colors.secondary} 100%)`
+          }}
         >
-          <div className="w-16 h-2 bg-white rounded opacity-80"></div>
+          <div className="w-20 h-3 bg-white rounded-full opacity-90"></div>
+          <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+            {getTemplateIcon(template.id)}
+          </div>
         </div>
-        <div className="p-4 space-y-3">
-          <div className="space-y-1">
-            <div className="w-24 h-2 bg-gray-300 rounded"></div>
-            <div className="w-16 h-1 bg-gray-200 rounded"></div>
+        <div className="p-6 space-y-4">
+          <div className="space-y-2">
+            <div className="w-32 h-3 bg-gray-800 rounded-full"></div>
+            <div className="w-20 h-2 bg-gray-400 rounded-full"></div>
           </div>
           <div className="space-y-2">
-            <div className="w-20 h-1 bg-gray-300 rounded"></div>
-            <div className="w-full h-1 bg-gray-200 rounded"></div>
-            <div className="w-3/4 h-1 bg-gray-200 rounded"></div>
+            <div className="w-24 h-2 bg-gray-600 rounded-full"></div>
+            <div className="w-full h-2 bg-gray-300 rounded-full"></div>
+            <div className="w-4/5 h-2 bg-gray-300 rounded-full"></div>
+            <div className="w-3/5 h-2 bg-gray-300 rounded-full"></div>
           </div>
-          <div className="space-y-1">
-            <div className="w-16 h-1 bg-gray-300 rounded"></div>
-            <div className="w-full h-1 bg-gray-200 rounded"></div>
+          <div className="flex gap-2">
+            <div className="w-16 h-6 rounded-full" style={{ backgroundColor: colors.secondary }}></div>
+            <div className="w-20 h-6 rounded-full" style={{ backgroundColor: colors.secondary }}></div>
+            <div className="w-14 h-6 rounded-full" style={{ backgroundColor: colors.secondary }}></div>
           </div>
         </div>
       </div>
@@ -162,74 +204,100 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
 
   if (isLoading) {
     return (
-      <div className="text-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-        <p className="text-gray-600">Loading templates...</p>
+      <div className="text-center py-12">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-6"></div>
+        <p className="text-gray-600 text-lg">Loading beautiful templates...</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8">
-      {/* Header Section */}
-      <div className="text-center space-y-4">
-        <h2 className="text-3xl font-bold text-gray-900">AI Powered Resume Builder - Modern, Professional and FREE</h2>
-        <p className="text-gray-600 max-w-2xl mx-auto">
-          Free AI-Powered Resume Builder, Smart Resume Builder, Interactive Online CV Builder, Cover Letter Builder, and More...
+    <div className="space-y-10">
+      {/* Enhanced Header Section */}
+      <div className="text-center space-y-6 py-8 bg-gradient-to-br from-blue-50 to-indigo-100 rounded-2xl">
+        <div className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-semibold">
+          <Sparkles className="w-4 h-4" />
+          AI POWERED
+        </div>
+        <h2 className="text-4xl font-bold text-gray-900 leading-tight">
+          Beautiful Resume Templates
+        </h2>
+        <p className="text-gray-600 max-w-3xl mx-auto text-lg leading-relaxed">
+          Choose from our collection of professionally designed templates. Each template is crafted to make your resume stand out and get you noticed by recruiters.
         </p>
-        <Button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold">
-          START NOW - FREE
-        </Button>
-        <p className="text-sm text-gray-500">*You can start now for free (no credit card required)</p>
+        <div className="flex justify-center">
+          <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-3 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
+            <Crown className="w-5 h-5 mr-2" />
+            START BUILDING - FREE
+          </Button>
+        </div>
       </div>
 
-      {/* Templates Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* Enhanced Templates Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {templates.map((template) => (
           <Card 
             key={template.id}
-            className={`relative p-6 cursor-pointer transition-all duration-200 hover:shadow-xl bg-white ${
+            className={`group relative p-6 cursor-pointer transition-all duration-300 hover:shadow-2xl bg-white border-2 rounded-2xl ${
               selectedTemplateId === template.id 
-                ? 'ring-2 ring-blue-500 shadow-xl transform scale-105' 
-                : 'hover:shadow-lg hover:transform hover:scale-102'
+                ? 'ring-4 ring-blue-500 shadow-2xl transform scale-105 border-blue-300' 
+                : 'hover:shadow-xl hover:transform hover:scale-102 border-gray-200 hover:border-blue-200'
             }`}
             onClick={() => onTemplateSelect(template.id, template.template_data)}
           >
             {selectedTemplateId === template.id && (
-              <div className="absolute top-3 right-3 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
-                <Check className="w-4 h-4 text-white" />
+              <div className="absolute -top-2 -right-2 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center z-10 shadow-lg">
+                <Check className="w-5 h-5 text-white" />
               </div>
             )}
 
-            <div className="space-y-4">
-              {getTemplatePreview(template)}
+            <div className="space-y-6">
+              {getEnhancedTemplatePreview(template)}
               
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    {getTemplateIcon(template.id)}
-                    <h4 className="font-bold text-gray-900 text-lg">{template.name}</h4>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-lg flex items-center justify-center">
+                      {getTemplateIcon(template.id)}
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-gray-900 text-lg">{template.name}</h4>
+                      <p className="text-sm text-gray-500 font-medium">{template.category}</p>
+                    </div>
                   </div>
                   {template.is_premium && (
-                    <Badge variant="secondary" className="text-xs bg-yellow-100 text-yellow-800">
-                      <Sparkles className="w-3 h-3 mr-1" />
+                    <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white border-0 shadow-md">
+                      <Crown className="w-3 h-3 mr-1" />
                       Premium
                     </Badge>
                   )}
                 </div>
-                <p className="text-sm text-gray-600">{template.description}</p>
                 
-                <div className="pt-2">
-                  <Button 
-                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onTemplateSelect(template.id, template.template_data);
-                    }}
-                  >
-                    {template.category} Templates
-                  </Button>
-                </div>
+                <p className="text-sm text-gray-600 leading-relaxed">{template.description}</p>
+                
+                <Button 
+                  className={`w-full font-semibold rounded-xl transition-all duration-200 ${
+                    template.is_premium 
+                      ? 'bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white shadow-lg hover:shadow-xl'
+                      : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl'
+                  }`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onTemplateSelect(template.id, template.template_data);
+                  }}
+                >
+                  {template.is_premium ? (
+                    <>
+                      <Crown className="w-4 h-4 mr-2" />
+                      Premium Template
+                    </>
+                  ) : (
+                    <>
+                      <FileText className="w-4 h-4 mr-2" />
+                      Free Template
+                    </>
+                  )}
+                </Button>
               </div>
             </div>
           </Card>
@@ -237,9 +305,9 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
       </div>
 
       {templates.length === 0 && (
-        <div className="text-center py-12 text-gray-500">
-          <Palette className="w-12 h-12 mx-auto mb-4 opacity-50" />
-          <p className="text-lg mb-2">No templates available</p>
+        <div className="text-center py-16 text-gray-500">
+          <Palette className="w-16 h-16 mx-auto mb-6 opacity-50" />
+          <p className="text-xl mb-2">No templates available</p>
           <p className="text-sm">Templates will be loaded automatically.</p>
         </div>
       )}
