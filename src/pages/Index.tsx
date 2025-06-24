@@ -244,35 +244,35 @@ const ResumeBuilder = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading your resume...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+          <p className="text-white">Loading your resume...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900">
       {/* Professional Header */}
-      <div className="bg-white border-b shadow-sm backdrop-blur-sm bg-white/95">
+      <div className="bg-slate-800/50 border-b border-slate-700 shadow-lg backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center">
                 <FileText className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Smart Resume Builder</h1>
-                <p className="text-sm text-gray-600">Create professional resumes with AI assistance</p>
+                <h1 className="text-2xl font-bold text-white">AI Powered Resume Builder</h1>
+                <p className="text-sm text-slate-300">Modern, Professional and FREE</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <span className="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
+              <span className="text-sm text-slate-300 bg-slate-700/50 px-3 py-1 rounded-full">
                 {user?.email}
               </span>
-              <Button variant="outline" onClick={handleAISuggestions} className="gap-2 border-blue-200 hover:bg-blue-50">
+              <Button variant="outline" onClick={handleAISuggestions} className="gap-2 border-blue-400/30 hover:bg-blue-500/10 text-blue-200">
                 <Sparkles className="w-4 h-4" />
                 AI Enhance
               </Button>
@@ -280,7 +280,7 @@ const ResumeBuilder = () => {
                 variant="outline" 
                 onClick={handleSave} 
                 disabled={isSaving}
-                className="gap-2 border-green-200 hover:bg-green-50"
+                className="gap-2 border-green-400/30 hover:bg-green-500/10 text-green-200"
               >
                 <Save className="w-4 h-4" />
                 {isSaving ? 'Saving...' : 'Save'}
@@ -289,7 +289,7 @@ const ResumeBuilder = () => {
                 <Download className="w-4 h-4" />
                 Export PDF
               </Button>
-              <Button variant="outline" onClick={signOut} className="gap-2 border-red-200 hover:bg-red-50 text-red-600">
+              <Button variant="outline" onClick={signOut} className="gap-2 border-red-400/30 hover:bg-red-500/10 text-red-200">
                 <LogOut className="w-4 h-4" />
                 Sign Out
               </Button>
@@ -303,9 +303,9 @@ const ResumeBuilder = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Left Panel - Form */}
           <div className="space-y-6">
-            <Card className="p-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+            <Card className="p-6 shadow-2xl border-0 bg-white/95 backdrop-blur-sm">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-6 mb-6 bg-gray-100 p-1 rounded-lg">
+                <TabsList className="grid w-full grid-cols-6 mb-6 bg-slate-100 p-1 rounded-lg">
                   <TabsTrigger value="personal" className="flex items-center gap-2 text-xs font-medium data-[state=active]:bg-white data-[state=active]:shadow-sm">
                     {getTabIcon('personal')}
                     Personal
@@ -422,7 +422,7 @@ const ResumeBuilder = () => {
             </Card>
 
             {/* Enhanced Progress Indicator */}
-            <Card className="p-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+            <Card className="p-6 shadow-2xl border-0 bg-white/95 backdrop-blur-sm">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center">
@@ -446,7 +446,7 @@ const ResumeBuilder = () => {
 
           {/* Right Panel - Preview */}
           <div className="lg:sticky lg:top-8 lg:h-fit">
-            <Card className="p-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+            <Card className="p-6 shadow-2xl border-0 bg-white/95 backdrop-blur-sm">
               <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">Live Preview</h3>
@@ -482,10 +482,10 @@ const AuthWrapper: React.FC<{ onAuthSuccess: () => void; showAuth: boolean }> = 
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading Smart Resume Builder...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+          <p className="text-white">Loading Smart Resume Builder...</p>
         </div>
       </div>
     );
