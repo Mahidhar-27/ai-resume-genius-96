@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Plus, X } from 'lucide-react';
-import { sanitizeInput, validateTextLength } from '@/utils/validation';
+import { validateTextLength } from '@/utils/validation';
 import { useToast } from '@/hooks/use-toast';
 
 interface Education {
@@ -46,33 +46,25 @@ const EducationForm: React.FC<EducationFormProps> = ({ data, onChange }) => {
   const updateEducation = (id: string, field: keyof Education, value: string) => {
     console.log(`Updating education ${id} field ${field}:`, value);
     
-    // Allow spaces and special characters for education fields
-    let sanitizedValue = value;
+    // Allow spaces and special characters for education fields - no sanitization
     let isValid = true;
 
     // Apply field-specific validation without removing spaces
     switch (field) {
       case 'degree':
       case 'institution':
-        // Allow spaces and special characters for education fields
         if (value.length > 200) {
           isValid = false;
-        } else {
-          sanitizedValue = value; // Keep original value with spaces
         }
         break;
       case 'year':
         if (value.length > 10) {
           isValid = false;
-        } else {
-          sanitizedValue = value;
         }
         break;
       case 'gpa':
         if (value.length > 10) {
           isValid = false;
-        } else {
-          sanitizedValue = value;
         }
         break;
     }
@@ -87,7 +79,7 @@ const EducationForm: React.FC<EducationFormProps> = ({ data, onChange }) => {
     }
 
     const updatedData = data.map(edu => 
-      edu.id === id ? { ...edu, [field]: sanitizedValue } : edu
+      edu.id === id ? { ...edu, [field]: value } : edu
     );
     console.log('Updated education data:', updatedData);
     onChange(updatedData);

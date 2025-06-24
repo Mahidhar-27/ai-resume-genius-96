@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
 import { Plus, Trash2, Code, ExternalLink } from 'lucide-react';
-import { sanitizeInput, validateTextLength, validateUrl } from '@/utils/validation';
+import { validateTextLength, validateUrl } from '@/utils/validation';
 import { useToast } from '@/components/ui/use-toast';
 
 interface Project {
@@ -41,7 +41,6 @@ const ProjectsForm: React.FC<ProjectsFormProps> = ({ data, onChange }) => {
   };
 
   const updateProject = (id: string, field: keyof Project, value: string) => {
-    let sanitizedValue = value;
     let maxLength = 1000;
 
     // Set appropriate max lengths for different fields
@@ -53,18 +52,16 @@ const ProjectsForm: React.FC<ProjectsFormProps> = ({ data, onChange }) => {
         maxLength = 200;
         break;
       case 'description':
-        maxLength = 1000;
+        maxLength =000;
         break;
       case 'link':
         maxLength = 500;
         break;
     }
 
-    // Sanitize input
-    sanitizedValue = sanitizeInput(value, maxLength);
-
+    // No sanitization - allow spaces and all characters
     // Validate length
-    if (!validateTextLength(sanitizedValue, maxLength)) {
+    if (!validateTextLength(value, maxLength)) {
       toast({
         title: "Input too long",
         description: `${field} must be less than ${maxLength} characters.`,
@@ -74,7 +71,7 @@ const ProjectsForm: React.FC<ProjectsFormProps> = ({ data, onChange }) => {
     }
 
     // Validate URL if it's a link field
-    if (field === 'link' && sanitizedValue && !validateUrl(sanitizedValue)) {
+    if (field === 'link' && value && !validateUrl(value)) {
       toast({
         title: "Invalid URL",
         description: "Please enter a valid URL (e.g., https://example.com)",
@@ -84,7 +81,7 @@ const ProjectsForm: React.FC<ProjectsFormProps> = ({ data, onChange }) => {
     }
 
     onChange(data.map(project => 
-      project.id === id ? { ...project, [field]: sanitizedValue } : project
+      project.id === id ? { ...project, [field]: value } : project
     ));
   };
 

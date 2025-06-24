@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Plus, X, Code, Globe, Wrench, Monitor } from 'lucide-react';
-import { sanitizeInput, validateTextLength } from '@/utils/validation';
+import { validateTextLength } from '@/utils/validation';
 import { useToast } from '@/components/ui/use-toast';
 
 interface Skills {
@@ -35,10 +35,8 @@ const SkillsForm: React.FC<SkillsFormProps> = ({ data, onChange }) => {
     
     if (!skill) return;
 
-    // Sanitize and validate
-    const sanitizedSkill = sanitizeInput(skill, 50);
-    
-    if (!validateTextLength(sanitizedSkill, 50)) {
+    // No sanitization - allow spaces and special characters
+    if (!validateTextLength(skill, 50)) {
       toast({
         title: "Skill name too long",
         description: "Skill names must be less than 50 characters.",
@@ -47,7 +45,7 @@ const SkillsForm: React.FC<SkillsFormProps> = ({ data, onChange }) => {
       return;
     }
 
-    if (data[category].includes(sanitizedSkill)) {
+    if (data[category].includes(skill)) {
       toast({
         title: "Duplicate skill",
         description: "This skill is already added.",
@@ -58,7 +56,7 @@ const SkillsForm: React.FC<SkillsFormProps> = ({ data, onChange }) => {
 
     onChange({
       ...data,
-      [category]: [...data[category], sanitizedSkill]
+      [category]: [...data[category], skill]
     });
 
     setNewSkills({ ...newSkills, [category]: '' });
@@ -79,8 +77,10 @@ const SkillsForm: React.FC<SkillsFormProps> = ({ data, onChange }) => {
   };
 
   const updateNewSkill = (category: keyof Skills, value: string) => {
-    const sanitizedValue = sanitizeInput(value, 50);
-    setNewSkills({ ...newSkills, [category]: sanitizedValue });
+    // No sanitization - allow spaces and all characters
+    if (value.length <= 50) {
+      setNewSkills({ ...newSkills, [category]: value });
+    }
   };
 
   const skillCategories = [
