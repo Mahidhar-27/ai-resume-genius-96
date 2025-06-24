@@ -52,7 +52,7 @@ const ProjectsForm: React.FC<ProjectsFormProps> = ({ data, onChange }) => {
         maxLength = 200;
         break;
       case 'description':
-        maxLength =000;
+        maxLength = 1000;
         break;
       case 'link':
         maxLength = 500;
