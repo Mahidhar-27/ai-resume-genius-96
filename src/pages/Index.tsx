@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -57,7 +57,7 @@ export interface ResumeData {
 
 const ResumeBuilder = () => {
   const { user, signOut } = useAuth();
-  const { currentResume, isLoading, isSaving, saveResume, convertToResumeData } = useResume();
+  const { currentResume, isLoading, isSaving, saveResume } = useResume();
   const [resumeData, setResumeData] = useState<ResumeData>({
     personalDetails: {
       fullName: '',
@@ -82,11 +82,62 @@ const ResumeBuilder = () => {
   const [selectedTemplate, setSelectedTemplate] = useState<{ id: string; data: any } | null>(null);
   const { toast } = useToast();
 
-  // Update resume data when current resume changes
+  const convertToResumeData = useCallback((resume: any): ResumeData => {
+    if (!resume) {
+      return {
+        personalDetails: {
+          fullName: '',
+          email: '',
+          phone: '',
+          location: '',
+          linkedin: '',
+          portfolio: '',
+          summary: ''
+        },
+        education: [],
+        experience: [],
+        projects: [],
+        skills: {
+          technical: [],
+          languages: [],
+          frameworks: [],
+          tools: []
+        }
+      };
+    }
+
+    const personalDetails = (resume.personal_details as any) || {};
+    const education = Array.isArray(resume.education) ? resume.education as any[] : [];
+    const experience = Array.isArray(resume.experience) ? resume.experience as any[] : [];
+    const projects = Array.isArray(resume.projects) ? resume.projects as any[] : [];
+    const skills = (resume.skills as any) || { technical: [], languages: [], frameworks: [], tools: [] };
+
+    return {
+      personalDetails: {
+        fullName: personalDetails?.fullName || '',
+        email: personalDetails?.email || '',
+        phone: personalDetails?.phone || '',
+        location: personalDetails?.location || '',
+        linkedin: personalDetails?.linkedin || '',
+        portfolio: personalDetails?.portfolio || '',
+        summary: personalDetails?.summary || ''
+      },
+      education: education as ResumeData['education'],
+      experience: experience as ResumeData['experience'],
+      projects: projects as ResumeData['projects'],
+      skills: {
+        technical: Array.isArray(skills.technical) ? skills.technical : [],
+        languages: Array.isArray(skills.languages) ? skills.languages : [],
+        frameworks: Array.isArray(skills.frameworks) ? skills.frameworks : [],
+        tools: Array.isArray(skills.tools) ? skills.tools : []
+      }
+    };
+  }, []);
+
+  // Initialize resume data only once when currentResume changes
   useEffect(() => {
     if (currentResume) {
       const convertedData = convertToResumeData(currentResume);
-      console.log('Converting resume data:', convertedData);
       setResumeData(convertedData);
       if (currentResume.selected_template_id) {
         setSelectedTemplate({
@@ -97,7 +148,7 @@ const ResumeBuilder = () => {
     }
   }, [currentResume, convertToResumeData]);
 
-  const updateResumeData = (section: keyof ResumeData, data: any) => {
+  const updateResumeData = useCallback((section: keyof ResumeData, data: any) => {
     console.log(`Updating ${section} with:`, data);
     setResumeData(prev => {
       const updated = {
@@ -107,15 +158,15 @@ const ResumeBuilder = () => {
       console.log('Updated resume data:', updated);
       return updated;
     });
-  };
+  }, []);
 
-  const handleTemplateSelect = (templateId: string, templateData: any) => {
+  const handleTemplateSelect = useCallback((templateId: string, templateData: any) => {
     setSelectedTemplate({ id: templateId, data: templateData });
     toast({
       title: "Template selected",
       description: "Your resume template has been updated."
     });
-  };
+  }, [toast]);
 
   const handleSave = async () => {
     try {

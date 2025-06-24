@@ -133,66 +133,12 @@ export const useResume = () => {
     }
   };
 
-  const convertToResumeData = (resume: Resume | null): ResumeData => {
-    if (!resume) {
-      return {
-        personalDetails: {
-          fullName: '',
-          email: '',
-          phone: '',
-          location: '',
-          linkedin: '',
-          portfolio: '',
-          summary: ''
-        },
-        education: [],
-        experience: [],
-        projects: [],
-        skills: {
-          technical: [],
-          languages: [],
-          frameworks: [],
-          tools: []
-        }
-      };
-    }
-
-    // Safely parse JSON data with fallbacks and proper type casting
-    const personalDetails = (resume.personal_details as any) || {};
-    const education = Array.isArray(resume.education) ? resume.education as any[] : [];
-    const experience = Array.isArray(resume.experience) ? resume.experience as any[] : [];
-    const projects = Array.isArray(resume.projects) ? resume.projects as any[] : [];
-    const skills = (resume.skills as any) || { technical: [], languages: [], frameworks: [], tools: [] };
-
-    return {
-      personalDetails: {
-        fullName: personalDetails?.fullName || '',
-        email: personalDetails?.email || '',
-        phone: personalDetails?.phone || '',
-        location: personalDetails?.location || '',
-        linkedin: personalDetails?.linkedin || '',
-        portfolio: personalDetails?.portfolio || '',
-        summary: personalDetails?.summary || ''
-      },
-      education: education as ResumeData['education'],
-      experience: experience as ResumeData['experience'],
-      projects: projects as ResumeData['projects'],
-      skills: {
-        technical: Array.isArray(skills.technical) ? skills.technical : [],
-        languages: Array.isArray(skills.languages) ? skills.languages : [],
-        frameworks: Array.isArray(skills.frameworks) ? skills.frameworks : [],
-        tools: Array.isArray(skills.tools) ? skills.tools : []
-      }
-    };
-  };
-
   return {
     currentResume,
     resumes,
     isLoading,
     isSaving,
     saveResume,
-    createNewResume,
-    convertToResumeData
+    createNewResume
   };
 };
